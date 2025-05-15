@@ -33,6 +33,20 @@ class Bot:
             secret_token=secret_token,
         )
 
+    async def restrict_user(
+        self,
+        chat_id: Union[int, str],
+        user_id: int,
+        until_date: int,
+    ) -> bool:
+        from eiogram.methods._restrict_user import RestrictUser
+
+        return await RestrictUser(self.token).execute(
+            chat_id=chat_id,
+            user_id=user_id,
+            until_date=until_date,
+        )
+
     async def delete_webhook(
         self,
         drop_pending_updates: bool = False,
