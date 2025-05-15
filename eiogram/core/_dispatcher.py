@@ -86,8 +86,8 @@ class Dispatcher:
                     await self._run_handler(handler.callback, processed_update)
                     return
                 except Exception as e:
-                    await self.error.handle(e)
-                    return
+                    if not await self.error.handle(e):
+                        raise
 
         except Exception as e:
             if not await self.error.handle(e):
