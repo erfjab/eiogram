@@ -63,6 +63,18 @@ class Message(Validated):
             reply_markup=reply_markup,
         )
 
+    async def reply(
+        self,
+        text: str,
+        reply_markup: Optional["InlineKeyboardMarkup"] = None,
+    ) -> "Message":
+        return await self.bot.send_message(
+            chat_id=self.chat.id,
+            text=text,
+            reply_markup=reply_markup,
+            reply_to_message_id=self.message_id,
+        )
+
     async def answer_photo(
         self,
         chat_id: Union[int, str],
