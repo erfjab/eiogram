@@ -85,16 +85,26 @@ class InlineKeyboardBuilder:
         return [
             [
                 {
-                    "text": btn.text,
-                    "callback_data": btn.callback_data,
-                    "url": btn.url,
-                    "web_app": {"url": btn.web_app} if btn.web_app else None,
-                    "copy_text": {"text": btn.copy_text},
-                    "switch_inline_query": btn.switch_inline_query,
+                    k: v
+                    for k, v in {
+                        "text": btn.text,
+                        "callback_data": btn.callback_data,
+                        "url": btn.url,
+                        "web_app": {"url": btn.web_app} if btn.web_app else None,
+                        "copy_text": {"text": btn.copy_text} if btn.copy_text else None,
+                        "switch_inline_query": btn.switch_inline_query,
+                    }.items()
+                    if v is not None
                 }
                 for btn in row
                 if any(
-                    [btn.callback_data, btn.url, btn.web_app, btn.switch_inline_query]
+                    [
+                        btn.callback_data,
+                        btn.url,
+                        btn.web_app,
+                        btn.copy_text,
+                        btn.switch_inline_query,
+                    ]
                 )
             ]
             for row in self._keyboard
