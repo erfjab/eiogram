@@ -62,6 +62,7 @@ class Bot:
         chat_id: Union[int, str],
         text: str,
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
+        reply_to_message_id: Optional[int] = None,
     ) -> "Message":
         from eiogram.methods._send_message import SendMessage
 
@@ -69,6 +70,7 @@ class Bot:
             chat_id=chat_id,
             text=text,
             reply_markup=reply_markup,
+            reply_to_message_id=reply_to_message_id,
         )
 
     async def edit_message(

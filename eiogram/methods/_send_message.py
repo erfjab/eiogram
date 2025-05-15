@@ -9,6 +9,7 @@ class SendMessage(MethodBase):
         chat_id: Union[int, str],
         text: str,
         reply_markup: Optional[InlineKeyboardMarkup] = None,
+        reply_to_message_id: Optional[int] = None,
     ) -> Message:
         data = {
             "chat_id": chat_id,
@@ -18,6 +19,10 @@ class SendMessage(MethodBase):
 
         if reply_markup:
             data["reply_markup"] = reply_markup.dict()
+
+        if reply_to_message_id:
+            data["reply_to_message_id"] = reply_to_message_id
+
         response = await self._make_request("POST", "sendMessage", data)
         message = Message.from_dict(response["result"])
         message.set_bot(self.bot)
