@@ -33,6 +33,16 @@ class Bot:
             secret_token=secret_token,
         )
 
+    async def delete_webhook(
+        self,
+        drop_pending_updates: bool = False,
+    ) -> bool:
+        from eiogram.methods._delete_webhook import DeleteWebhook
+
+        return await DeleteWebhook(self.token).execute(
+            drop_pending_updates=drop_pending_updates,
+        )
+
     async def send_message(
         self,
         chat_id: Union[int, str],
