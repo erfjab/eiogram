@@ -1,1 +1,3 @@
-# eiogram
+این پروژه یک نسخه‌ی شخصی‌شده و ساده‌شده از ایوگرامه. به‌خاطر مصرف رم زیاد ایوگرام، تصمیم گرفتم یک لایبرری سبک و اختصاصی برای نیازهای خودم بنویسم. مصرف رم به‌طور قابل‌توجهی کمتره؛ حدود پنج تا ده برابر کمتر. ساختارش خیلی ساده‌تر و قابل‌فهم‌تره. برای پروژه‌های شخصی استفاده میشه. این پروژه عمومی نیست و ایشو یا پول‌ریکوئست‌ها بررسی نمیشن. اگه خواستید، می‌تونید فورکش کنید و برای خودتون تغییرش بدید. ممنون از توجه‌تون.
+
+This project is a simplified and customized version of Aiogram. Because Aiogram was using too much RAM, I decided to write my own lightweight library tailored to my needs. It uses significantly less memory — about five to ten times less. The structure is much simpler and easier to understand. It’s intended for personal use. This is not a public or maintained project, and issues or pull requests will not be reviewed. If you want, feel free to fork it and modify it for your own needs. Thanks for your attention.
