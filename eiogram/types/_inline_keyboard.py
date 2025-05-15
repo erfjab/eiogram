@@ -13,18 +13,18 @@ class InlineKeyboardButton(Validated):
     switch_inline_query: Optional[str] = None
 
     def dict(self) -> dict:
-        return {
-            k: v
-            for k, v in {
-                "text": self.text,
-                "callback_data": self.callback_data,
-                "url": self.url,
-                "web_app": {"url": self.web_app},
-                "copy_text": {"text": self.copy_text},
-                "switch_inline_query": self.switch_inline_query,
-            }.items()
-            if v is not None
-        }
+        result = {"text": self.text}
+        if self.callback_data is not None:
+            result["callback_data"] = self.callback_data
+        if self.url is not None:
+            result["url"] = self.url
+        if self.web_app is not None:
+            result["web_app"] = {"url": self.web_app}
+        if self.copy_text is not None:
+            result["copy_text"] = {"text": self.copy_text}
+        if self.switch_inline_query is not None:
+            result["switch_inline_query"] = self.switch_inline_query
+        return result
 
 
 @dataclass
