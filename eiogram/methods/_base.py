@@ -68,7 +68,6 @@ class MethodBase:
         """Parse and validate Telegram API response"""
         try:
             data: dict = await response.json()
-            print(data)
         except ValueError:
             raise TelegramError("Invalid JSON response")
 
