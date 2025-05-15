@@ -23,6 +23,6 @@ class ErrorHandler:
                     result = await handler(error)
                     if result is not None and result:
                         return True
-                except Exception as e:
-                    print(f"Error in error handler {handler.__name__}: {e}")
+                except Exception:
+                    pass
         return False
