@@ -97,3 +97,12 @@ class Message(Validated):
             message_id=self.message_id,
             disable_notification=disable_notification,
         )
+
+    async def mute(self, until_date: int) -> bool:
+        if self.from_user is None:
+            return None
+        return await self.bot.restrict_user(
+            chat_id=self.chat.id,
+            user_id=self.from_user.id,
+            until_date=until_date,
+        )
