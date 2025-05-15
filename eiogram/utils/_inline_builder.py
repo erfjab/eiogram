@@ -89,6 +89,7 @@ class InlineKeyboardBuilder:
                     "callback_data": btn.callback_data,
                     "url": btn.url,
                     "web_app": {"url": btn.web_app} if btn.web_app else None,
+                    "copy_text": {"text": btn.copy_text},
                     "switch_inline_query": btn.switch_inline_query,
                 }
                 for btn in row

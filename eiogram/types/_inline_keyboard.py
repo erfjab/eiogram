@@ -6,7 +6,7 @@ from ._base import Validated
 @dataclass
 class InlineKeyboardButton(Validated):
     text: str
-    callback_data: Optional[str]
+    callback_data: Optional[str] = None
     url: Optional[str] = None
     web_app: Optional[str] = None
     copy_text: Optional[str] = None
@@ -19,8 +19,8 @@ class InlineKeyboardButton(Validated):
                 "text": self.text,
                 "callback_data": self.callback_data,
                 "url": self.url,
-                "web_app": self.web_app,
-                "copy_text": self.copy_text,
+                "web_app": {"url": self.web_app},
+                "copy_text": {"text": self.copy_text},
                 "switch_inline_query": self.switch_inline_query,
             }.items()
             if v is not None
