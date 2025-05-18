@@ -47,7 +47,7 @@ class Bot:
 
     async def set_my_commands(
         self,
-        commands: list[BotCommand],
+        commands: list["BotCommand"],
     ) -> bool:
         from eiogram.methods._set_my_commands import SetMyCommands
 
