@@ -1,9 +1,7 @@
 from typing import Optional, Union, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from eiogram.types._me import Me
-    from eiogram.types._message import Message
-    from eiogram.types._inline_keyboard import InlineKeyboardMarkup
+    from eiogram.types import Me, Message, InlineKeyboardMarkup, BotCommand
 
 
 class Bot:
@@ -45,6 +43,16 @@ class Bot:
             chat_id=chat_id,
             user_id=user_id,
             until_date=until_date,
+        )
+
+    async def set_my_commands(
+        self,
+        commands: list[BotCommand],
+    ) -> bool:
+        from eiogram.methods._set_my_commands import SetMyCommands
+
+        return await SetMyCommands(self.token).execute(
+            commands=commands,
         )
 
     async def delete_webhook(

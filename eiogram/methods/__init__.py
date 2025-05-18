@@ -5,13 +5,15 @@ from ._send_photo import SendPhoto
 from ._pin_message import PinMessage
 from ._delete_messages import DeleteMessages
 from ._set_webhook import SetWebhook
+from ._set_my_commands import SetMyCommands
 
 __all__ = [
-    GetMe,
-    SendMessage,
-    EditMessage,
-    SendPhoto,
-    PinMessage,
-    DeleteMessages,
-    SetWebhook,
+    "GetMe",
+    "SendMessage",
+    "EditMessage",
+    "SendPhoto",
+    "PinMessage",
+    "DeleteMessages",
+    "SetWebhook",
+    "SetMyCommands",
 ]

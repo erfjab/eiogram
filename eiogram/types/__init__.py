@@ -5,6 +5,7 @@ from ._callback import Callback
 from ._inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 from ._me import Me
 from ._update import Update
+from ._bot_command import BotCommand
 
 __all__ = [
     "Me",
@@ -14,6 +15,7 @@ __all__ = [
     "User",
     "Message",
     "Callback",
+    "BotCommand",
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",
 ]
