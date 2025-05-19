@@ -23,11 +23,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Generate version
+      - name: Generate random 6-letter version
         id: version
         run: |
-          BUILD_ID=$(python -c "import uuid; print(str(uuid.uuid4())[:8])")          
-          VERSION="${BUILD_ID}"
+          # Generate random 6-letter lowercase string
+          RANDOM_STR=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6)))")
+          VERSION="dev${RANDOM_STR}"
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
