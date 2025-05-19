@@ -1,6 +1,6 @@
-from typing import Callable, Awaitable, Union, TypeVar
 from functools import wraps
 import inspect
+from typing import Callable, Awaitable, Union, TypeVar
 
 from ._base import BaseHandler
 from ...types import Callback
@@ -9,7 +9,9 @@ from ...utils._callback_data import CallbackDataFilter
 
 CallbackT = TypeVar("CallbackT", bound=Callback)
 CallbackHandler = Callable[[CallbackT], Awaitable[None]]
-FilterFunc = Union[Filter, Callable[[Callback], bool], CallbackDataFilter]
+FilterFunc = Union[
+    Filter, Callable[[Callback], Union[bool, Awaitable[bool]]], CallbackDataFilter
+]
 
 
 class CallbackHandler(BaseHandler):
@@ -26,23 +28,27 @@ class CallbackHandler(BaseHandler):
             @wraps(func)
             async def wrapper(callback: Callback):
                 callback_data = None
+                filter_results = []
 
                 for flt in filters:
-                    result = flt(callback)
-                    if inspect.isawaitable(result):
-                        result = await result
+                    try:
+                        result = flt(callback)
+                        if inspect.isawaitable(result):
+                            result = await result
 
-                    if isinstance(result, bool):
-                        if not result:
-                            return
-                    elif isinstance(flt, CallbackDataFilter):
-                        callback_data = result
+                        if isinstance(result, bool):
+                            if not result:
+                                return
+                            filter_results.append(result)
+                        elif isinstance(flt, CallbackDataFilter):
+                            callback_data = result
+                    except Exception as e:
+                        raise ValueError(f"Filter error: {str(e)}") from e
 
                 if wants_callback_data and callback_data is not None:
                     return await func(callback, callback_data=callback_data)
                 return await func(callback)
 
-            self.register(handler=wrapper, filters=list(filters), priority=priority)
-            return func
+            return self.register(wrapper, list(filters), priority)
 
         return decorator

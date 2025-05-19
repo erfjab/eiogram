@@ -9,7 +9,7 @@ from .handlers import (
 from ..types import Update
 from ..utils._filters import StatsFilter
 from ._dispatcher import Dispatcher
-from .middlewares import MiddlewareHandler
+from .handlers._middleware import MiddlewareHandler
 
 
 class Router:
@@ -19,17 +19,15 @@ class Router:
         self.callback = CallbackHandler()
         self.middleware = MiddlewareHandler()
         self.error = ErrorHandler()
-        self._parent_dispatcher: Optional["Dispatcher"] = None
+        self._parent_dispatcher: Optional[Dispatcher] = None
 
     def include_router(self, router: "Router") -> None:
-        """Include another router's handlers and middlewares"""
         self.message.handlers.extend(router.message.handlers)
         self.callback.handlers.extend(router.callback.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
         self.error.handlers.extend(router.error.handlers)
 
-    def setup(self, dispatcher: "Dispatcher") -> None:
-        """Setup router with dispatcher"""
+    def setup(self, dispatcher: Dispatcher) -> None:
         self._parent_dispatcher = dispatcher
 
         # Register middlewares
@@ -37,7 +35,7 @@ class Router:
             dispatcher.middlewares.append(mw)
         dispatcher.middlewares.sort(key=lambda m: m.priority, reverse=True)
 
-        # Register message handlers
+        # Register handlers
         for handler in self.message.handlers:
             dispatcher.register(
                 update_type="message",
@@ -46,7 +44,6 @@ class Router:
                 priority=handler.priority,
             )
 
-        # Register callback handlers
         for handler in self.callback.handlers:
             dispatcher.register(
                 update_type="callback",
@@ -60,7 +57,6 @@ class Router:
             dispatcher.error.handlers.append(handler)
 
     async def matches_update(self, update: Update) -> Union[bool, Handler]:
-        """Find matching handler for update"""
         try:
             handlers = (
                 self.message.handlers if update.message else self.callback.handlers
@@ -71,6 +67,7 @@ class Router:
 
             for handler in handlers:
                 filter_results = []
+                skip = False
 
                 if stats and not any(
                     isinstance(f, StatsFilter) for f in handler.filters
@@ -82,23 +79,23 @@ class Router:
 
                 for filter_func in handler.filters:
                     try:
-                        if isinstance(filter_func, StatsFilter):
-                            result = filter_func(stats)
-                        elif inspect.iscoroutinefunction(filter_func):
-                            result = await filter_func(update.origin)
+                        result = filter_func(update.origin)
+                        if inspect.isawaitable(result):
+                            result = await result
+
+                        if isinstance(result, bool):
+                            if not result:
+                                skip = True
+                                break
+                            filter_results.append(result)
                         else:
-                            result = filter_func(update.origin)
-
-                        filter_results.append(result)
+                            filter_results.append(True)
                     except Exception as e:
-                        if not await self.error.handle(e):
-                            raise
+                        raise ValueError(f"Filter evaluation failed: {str(e)}") from e
 
-                if all(filter_results):
+                if not skip and all(filter_results):
                     return handler
 
             return False
         except Exception as e:
-            if not await self.error.handle(e):
-                raise
-            return False
+            raise RuntimeError(f"Update matching failed: {str(e)}") from e

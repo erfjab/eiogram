@@ -39,9 +39,8 @@ class Dispatcher:
 
     async def _process_middlewares(
         self, update: U, handler: Callable[[U, Dict[str, Any]], Awaitable[Any]]
-    ) -> Optional[Any]:
+    ) -> Any:
         data: Dict[str, Any] = {}
-
         final_handler = handler
 
         for middleware in reversed(self.middlewares):
@@ -52,11 +51,11 @@ class Dispatcher:
         except Exception as e:
             if not await self.error.handle(e):
                 raise
-            return None
+            raise RuntimeError(f"Middleware processing failed: {str(e)}") from e
 
     def _wrap_middleware(
         self,
-        middleware: "BaseMiddleware",
+        middleware: BaseMiddleware,
         handler: Callable[[U, Dict[str, Any]], Awaitable[Any]],
     ) -> Callable[[U, Dict[str, Any]], Awaitable[Any]]:
         async def wrapper(update: U, data: Dict[str, Any]) -> Any:
@@ -74,10 +73,7 @@ class Dispatcher:
         if update_type not in self.handlers:
             raise ValueError(f"Invalid update type: {update_type}")
 
-        handler_entry = Handler(
-            callback=handler, filters=filters or [], priority=priority
-        )
-        self.handlers[update_type].append(handler_entry)
+        self.handlers[update_type].append(Handler(handler, filters or [], priority))
         self.handlers[update_type].sort(key=lambda x: x.priority, reverse=True)
 
     async def process(self, update: Update) -> None:
@@ -87,26 +83,25 @@ class Dispatcher:
             if update.callback:
                 update.callback.set_bot(self.bot)
 
-            # Find matching handler
-            handler = None
-            for router in self.routers:
-                handler = await router.matches_update(update)
-                if handler:
-                    break
-
+            handler = await self._find_handler(update)
             if not handler:
-                return
+                raise ValueError("No matching handler found for update")
 
-            # Create handler wrapper
             async def handler_wrapper(update: U, data: Dict[str, Any]) -> None:
                 await self._run_handler(handler.callback, update, data)
 
-            # Process middlewares
             await self._process_middlewares(update, handler_wrapper)
 
         except Exception as e:
             if not await self.error.handle(e):
                 raise
+
+    async def _find_handler(self, update: Update) -> Optional[Handler]:
+        for router in self.routers:
+            handler = await router.matches_update(update)
+            if handler:
+                return handler
+        return None
 
     async def _run_handler(
         self, callback: Callable, update: Update, data: Optional[Dict[str, Any]] = None
@@ -117,27 +112,26 @@ class Dispatcher:
         sig = inspect.signature(callback)
         kwargs: Dict[str, Any] = {}
 
-        # Add bot if needed
-        if "bot" in sig.parameters and self.bot:
+        # Add common parameters
+        if "bot" in sig.parameters:
             kwargs["bot"] = self.bot
-
-        # Add message or callback if needed
         if "message" in sig.parameters and update.message:
             kwargs["message"] = update.message
-        elif "callback" in sig.parameters and update.callback:
+        if "callback" in sig.parameters and update.callback:
             kwargs["callback"] = update.callback
-
-        # Add stats if needed
         if "stats" in sig.parameters:
             kwargs["stats"] = StatsData(
                 key=int(update.origin.from_user.chatid), storage=self.storage
             )
 
-        # Add data parameters
+        # Add data and update parameters
         for param in sig.parameters:
             if param in data:
                 kwargs[param] = data[param]
-            elif param in update.data:
-                kwargs[param] = update.data[param]
+            elif hasattr(update, param):
+                kwargs[param] = getattr(update, param)
 
-        await callback(**kwargs)
+        try:
+            await callback(**kwargs)
+        except Exception as e:
+            raise RuntimeError(f"Handler execution failed: {str(e)}") from e

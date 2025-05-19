@@ -2,7 +2,6 @@ name: Publish Dev Version
 
 on:
   push:
-    branches: ["master"]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
@@ -24,15 +23,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Generate dev version
+      - name: Generate version
         id: version
         run: |
+          # Get branch name (sanitize for version syntax)
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${BRANCH_NAME//\//-}  # Replace / with -
+          BRANCH_NAME=${BRANCH_NAME//_/-}   # Replace _ with -
+          BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')  # Convert to lowercase
+          
+          # Generate version string
           BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
           TIMESTAMP=$(date -u +'%Y%m%d.%H%M%S')
-          VERSION="${BASE_VERSION}.dev${TIMESTAMP}"
+          
+          if [ "$BRANCH_NAME" = "master" ]; then
+            VERSION="${BASE_VERSION}.dev${TIMESTAMP}"
+          else
+            VERSION="${BASE_VERSION}.dev.${BRANCH_NAME}.${TIMESTAMP}"
+          fi
+          
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
-          echo "Generated dev version: ${VERSION}"
+          echo "Generated version: ${VERSION}"
 
       - name: Build package
         run: python -m build

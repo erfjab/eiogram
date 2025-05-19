@@ -16,13 +16,12 @@ class ErrorHandler:
         return decorator
 
     async def handle(self, error: Exception) -> bool:
-        """Handle an error and return whether it was handled"""
         for exception_type, handler in self.handlers:
             if exception_type is None or isinstance(error, exception_type):
                 try:
                     result = await handler(error)
-                    if result is not None and result:
-                        return True
-                except Exception:
-                    pass
+                    if result is not None:
+                        return result
+                except Exception as e:
+                    raise RuntimeError(f"Error handler failed: {str(e)}") from e
         return False
