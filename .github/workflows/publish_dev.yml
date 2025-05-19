@@ -27,7 +27,7 @@ jobs:
         id: version
         run: |
           # Generate random 6-letter suffix
-          RANDOM_SUFFIX=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6))")
+          RANDOM_SUFFIX=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6)))")
           
           # Create PEP 440 compliant dev version
           BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
