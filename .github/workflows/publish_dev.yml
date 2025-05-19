@@ -1,4 +1,4 @@
-name: Publish Dev Version to PyPI
+name: Publish Dev Version
 
 on:
   push:
@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -23,19 +25,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Generate unique dev version
-        id: version
+      - name: Get latest tag version
+        id: get_version
         run: |
-          # Generate random 6-letter suffix
-          RANDOM_SUFFIX=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6)))")
-          
-          # Create PEP 440 compliant dev version
-          BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
-          VERSION="${BASE_VERSION}.dev0+${RANDOM_SUFFIX}"
-          
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
-          echo "Generated version: ${VERSION}"
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          CLEAN_VERSION=${LATEST_TAG#v}
+          echo "version=${CLEAN_VERSION}.dev$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+          echo "Latest tag version: ${CLEAN_VERSION}"
+
+      - name: Update version in pyproject.toml
+        run: |
+          sed -i "s/version = .*/version = \"${{ steps.get_version.outputs.version }}\"/" pyproject.toml
+          echo "New version: ${{ steps.get_version.outputs.version }}"
 
       - name: Build package
         run: python -m build
@@ -47,8 +48,4 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          # Force rebuild to ensure fresh files
-          rm -rf dist/
-          python -m build
-          twine upload --skip-existing dist/*
+        run: twine upload dist/*
