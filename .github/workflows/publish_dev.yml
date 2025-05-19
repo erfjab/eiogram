@@ -1,0 +1,47 @@
+name: Publish Dev Version
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '**.md'
+
+jobs:
+  publish-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Generate dev version
+        id: version
+        run: |
+          BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
+          TIMESTAMP=$(date -u +'%Y%m%d.%H%M%S')
+          VERSION="${BASE_VERSION}.dev${TIMESTAMP}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
+          echo "Generated dev version: ${VERSION}"
+
+      - name: Build package
+        run: python -m build
+
+      - name: Verify package
+        run: twine check dist/*
+
+      - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+        run: twine upload --repository testpypi dist/*
