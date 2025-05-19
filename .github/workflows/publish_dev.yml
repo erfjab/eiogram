@@ -1,5 +1,4 @@
 name: Publish Dev Version
-
 on:
   push:
     paths-ignore:
@@ -23,12 +22,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Generate PEP 440 compatible version
+      - name: Generate unique dev version
         id: version
         run: |
           RANDOM_SUFFIX=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6)))")
-          VERSION="0.0.1.dev0+${RANDOM_SUFFIX}"
-          
+          VERSION="0.0.0.dev0+${RANDOM_SUFFIX}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
           echo "Generated version: ${VERSION}"
@@ -39,8 +37,11 @@ jobs:
       - name: Verify package
         run: twine check dist/*
 
-      - name: Publish to TestPyPI
+      - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload --repository testpypi dist/*
+        run: |
+          rm -rf dist/
+          python -m build
+          twine upload --skip-existing dist/*
