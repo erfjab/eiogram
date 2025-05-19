@@ -26,12 +26,8 @@ jobs:
       - name: Generate version
         id: version
         run: |
-          # Generate random build ID (first 8 chars of UUID)
-          BUILD_ID=$(python -c "import uuid; print(str(uuid.uuid4())[:8])")
-          TIMESTAMP=$(date -u +'%Y%m%d%H%M%S')
-          BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
-          
-          VERSION="${BASE_VERSION}.dev${TIMESTAMP}+${BUILD_ID}"
+          BUILD_ID=$(python -c "import uuid; print(str(uuid.uuid4())[:8])")          
+          VERSION="${BUILD_ID}"
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
@@ -46,5 +42,5 @@ jobs:
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload --repository testpypi dist/*
