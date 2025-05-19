@@ -28,18 +28,21 @@ jobs:
         run: |
           # Get branch name (sanitize for version syntax)
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          BRANCH_NAME=${BRANCH_NAME//\//-}  # Replace / with -
-          BRANCH_NAME=${BRANCH_NAME//_/-}   # Replace _ with -
+          BRANCH_NAME=${BRANCH_NAME//\//.}  # Replace / with .
+          BRANCH_NAME=${BRANCH_NAME//_/.}   # Replace _ with .
           BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')  # Convert to lowercase
+          BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-z0-9.]//g')  # Remove invalid chars
           
-          # Generate version string
+          # Generate version string compatible with PEP 440
           BASE_VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml | head -1)
-          TIMESTAMP=$(date -u +'%Y%m%d.%H%M%S')
+          TIMESTAMP=$(date -u +'%Y%m%d%H%M%S')
           
           if [ "$BRANCH_NAME" = "master" ]; then
             VERSION="${BASE_VERSION}.dev${TIMESTAMP}"
           else
-            VERSION="${BASE_VERSION}.dev.${BRANCH_NAME}.${TIMESTAMP}"
+            # Truncate branch name if too long
+            SHORT_BRANCH=$(echo "$BRANCH_NAME" | cut -c1-20)
+            VERSION="${BASE_VERSION}.dev.${SHORT_BRANCH}+${TIMESTAMP}"
           fi
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
