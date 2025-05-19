@@ -23,12 +23,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      - name: Generate random 6-letter version
+      - name: Generate PEP 440 compatible version
         id: version
         run: |
-          # Generate random 6-letter lowercase string
-          RANDOM_STR=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6)))")
-          VERSION="dev${RANDOM_STR}"
+          RANDOM_SUFFIX=$(python -c "import random; import string; print(''.join(random.choice(string.ascii_lowercase) for _ in range(6))")
+              VERSION="0.0.1.dev0+${RANDOM_SUFFIX}"
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           sed -i "s/version = .*/version = \"${VERSION}\"/" pyproject.toml
