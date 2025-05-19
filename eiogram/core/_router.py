@@ -3,13 +3,13 @@ from typing import Optional, Union
 from .handlers import (
     MessageHandler,
     CallbackHandler,
-    MiddlewareHandler,
     ErrorHandler,
     Handler,
 )
 from ..types import Update
 from ..utils._filters import StatsFilter
 from ._dispatcher import Dispatcher
+from .middlewares import MiddlewareHandler
 
 
 class Router:
@@ -22,18 +22,20 @@ class Router:
         self._parent_dispatcher: Optional["Dispatcher"] = None
 
     def include_router(self, router: "Router") -> None:
+        """Include another router's handlers and middlewares"""
         self.message.handlers.extend(router.message.handlers)
         self.callback.handlers.extend(router.callback.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
         self.error.handlers.extend(router.error.handlers)
 
     def setup(self, dispatcher: "Dispatcher") -> None:
+        """Setup router with dispatcher"""
         self._parent_dispatcher = dispatcher
 
         # Register middlewares
         for mw in self.middleware.middlewares:
             dispatcher.middlewares.append(mw)
-            dispatcher.middlewares.sort(key=lambda m: m.priority, reverse=True)
+        dispatcher.middlewares.sort(key=lambda m: m.priority, reverse=True)
 
         # Register message handlers
         for handler in self.message.handlers:
@@ -57,19 +59,8 @@ class Router:
         for handler in self.error.handlers:
             dispatcher.error.handlers.append(handler)
 
-    async def _process_middlewares(self, update: Update) -> Optional[Update]:
-        current_data = update
-        for mw in self.middleware.middlewares:
-            try:
-                current_data = await mw.func(current_data)
-                if current_data is None:
-                    return None
-            except Exception as e:
-                if not await self.error.handle(e):
-                    raise
-        return current_data
-
     async def matches_update(self, update: Update) -> Union[bool, Handler]:
+        """Find matching handler for update"""
         try:
             handlers = (
                 self.message.handlers if update.message else self.callback.handlers
