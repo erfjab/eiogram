@@ -1,15 +1,15 @@
 import inspect
 from typing import Optional, Union
-from .handlers import (
+from ._handlers import (
     MessageHandler,
     CallbackHandler,
     ErrorHandler,
     Handler,
 )
 from ..types import Update
-from ..utils._filters import StatsFilter
+from ..filters import StatsFilter
 from ._dispatcher import Dispatcher
-from .handlers._middleware import MiddlewareHandler
+from ._handlers._middleware import MiddlewareHandler
 
 
 class Router:

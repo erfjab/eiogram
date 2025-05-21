@@ -10,7 +10,7 @@ from typing import (
     TYPE_CHECKING,
 )
 import inspect
-from .handlers import Handler, ErrorHandler, FilterFunc
+from ._handlers import Handler, ErrorHandler, FilterFunc
 from ..types import Update, Message, Callback
 from ..utils._stats import BaseStorage, MemoryStorage, StatsData
 from .middlewares import BaseMiddleware

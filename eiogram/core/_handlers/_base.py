@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, List, Optional, TypeVar, Union, Awaitable
 from ...types import Update, Message, Callback
-from ...utils._filters import Filter
+from ...filters import Filter
 
 U = TypeVar("U", bound=Union[Update, Message, Callback])
 HandlerFunc = Callable[[U], Awaitable[None]]

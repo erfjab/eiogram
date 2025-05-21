@@ -1,10 +1,10 @@
-from functools import wraps
 import inspect
+from functools import wraps
 from typing import Callable, Awaitable, Union, TypeVar
 
 from ._base import BaseHandler
 from ...types import Callback
-from ...utils._filters import Filter
+from ...filters import Filter
 from ...utils._callback_data import CallbackDataFilter
 
 CallbackT = TypeVar("CallbackT", bound=Callback)

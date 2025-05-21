@@ -9,7 +9,7 @@ class Bot:
         self.token = token
 
     async def get_me(self) -> "Me":
-        from eiogram.methods._get_me import GetMe
+        from .methods._get_me import GetMe
 
         return await GetMe(self.token).execute()
 
@@ -21,7 +21,7 @@ class Bot:
         drop_pending_updates: bool = False,
         secret_token: Optional[str] = None,
     ) -> bool:
-        from eiogram.methods._set_webhook import SetWebhook
+        from .methods._set_webhook import SetWebhook
 
         return await SetWebhook(self.token).execute(
             url=url,
@@ -37,7 +37,7 @@ class Bot:
         user_id: int,
         until_date: int,
     ) -> bool:
-        from eiogram.methods._restrict_user import RestrictUser
+        from .methods._restrict_user import RestrictUser
 
         return await RestrictUser(self.token).execute(
             chat_id=chat_id,
@@ -49,7 +49,7 @@ class Bot:
         self,
         commands: list["BotCommand"],
     ) -> bool:
-        from eiogram.methods._set_my_commands import SetMyCommands
+        from .methods._set_my_commands import SetMyCommands
 
         return await SetMyCommands(self.token).execute(
             commands=commands,
@@ -59,7 +59,7 @@ class Bot:
         self,
         drop_pending_updates: bool = False,
     ) -> bool:
-        from eiogram.methods._delete_webhook import DeleteWebhook
+        from .methods._delete_webhook import DeleteWebhook
 
         return await DeleteWebhook(self.token).execute(
             drop_pending_updates=drop_pending_updates,
@@ -72,7 +72,7 @@ class Bot:
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
         reply_to_message_id: Optional[int] = None,
     ) -> "Message":
-        from eiogram.methods._send_message import SendMessage
+        from .methods._send_message import SendMessage
 
         return await SendMessage(self.token).execute(
             chat_id=chat_id,
@@ -88,7 +88,7 @@ class Bot:
         text: str,
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
     ) -> "Message":
-        from eiogram.methods._edit_message import EditMessage
+        from .methods._edit_message import EditMessage
 
         return await EditMessage(self.token).execute(
             chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup
@@ -101,7 +101,7 @@ class Bot:
         caption: Optional[str] = None,
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
     ) -> "Message":
-        from eiogram.methods._send_photo import SendPhoto
+        from .methods._send_photo import SendPhoto
 
         return await SendPhoto(self.token).execute(
             chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup
@@ -113,7 +113,7 @@ class Bot:
         message_id: int,
         disable_notification: bool = False,
     ) -> bool:
-        from eiogram.methods._pin_message import PinMessage
+        from .methods._pin_message import PinMessage
 
         return await PinMessage(self.token).execute(
             chat_id=chat_id,
@@ -124,7 +124,7 @@ class Bot:
     async def delete_messages(
         self, chat_id: Union[int, str], message_ids: List[int]
     ) -> List[bool]:
-        from eiogram.methods._delete_messages import DeleteMessages
+        from .methods._delete_messages import DeleteMessages
 
         return await DeleteMessages(self.token).execute(
             chat_id=chat_id, message_ids=message_ids
