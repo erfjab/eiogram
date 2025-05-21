@@ -61,39 +61,48 @@ class Router:
             handlers = (
                 self.message.handlers if update.message else self.callback.handlers
             )
-            stats = await self._parent_dispatcher.storage.get_stats(
-                update.origin.from_user.chatid
+            if not handlers:
+                return False
+
+            stats = None
+            needs_stats = any(
+                isinstance(f, StatsFilter)
+                for handler in handlers
+                for f in handler.filters
             )
 
-            for handler in handlers:
-                filter_results = []
-                skip = False
+            if needs_stats:
+                stats = await self._parent_dispatcher.storage.get_stats(
+                    update.origin.from_user.chatid
+                )
 
-                if stats and not any(
-                    isinstance(f, StatsFilter) for f in handler.filters
+            for handler in handlers:
+                if needs_stats and not stats:
+                    continue
+
+                if (
+                    any(isinstance(f, StatsFilter) for f in handler.filters)
+                    and not stats
                 ):
                     continue
 
-                if not handler.filters and not stats:
+                if not handler.filters:
                     return handler
 
+                filter_passed = True
                 for filter_func in handler.filters:
                     try:
                         result = filter_func(update.origin)
                         if inspect.isawaitable(result):
                             result = await result
 
-                        if isinstance(result, bool):
-                            if not result:
-                                skip = True
-                                break
-                            filter_results.append(result)
-                        else:
-                            filter_results.append(True)
+                        if not result:
+                            filter_passed = False
+                            break
                     except Exception as e:
                         raise ValueError(f"Filter evaluation failed: {str(e)}") from e
 
-                if not skip and all(filter_results):
+                if filter_passed:
                     return handler
 
             return False
