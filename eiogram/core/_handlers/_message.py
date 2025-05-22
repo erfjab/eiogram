@@ -4,7 +4,7 @@ from ._base import BaseHandler, FilterFunc
 from ...types import Message
 
 MessageT = TypeVar("MessageT", bound=Message)
-MessageHandler = Callable[[MessageT], Awaitable[None]]
+MessageHandlerFunc = Callable[[MessageT], Awaitable[None]]
 
 
 class MessageHandler(BaseHandler):
@@ -13,5 +13,5 @@ class MessageHandler(BaseHandler):
 
     def __call__(
         self, *filters: FilterFunc, priority: int = 0
-    ) -> Callable[[MessageHandler], MessageHandler]:
+    ) -> Callable[[MessageHandlerFunc], MessageHandlerFunc]:
         return super().__call__(*filters, priority=priority)

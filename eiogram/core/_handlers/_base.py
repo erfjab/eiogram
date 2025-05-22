@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Callable, List, Optional, TypeVar, Union, Awaitable
 from ...types import Update, Message, Callback
 from ...filters import Filter
@@ -8,11 +7,25 @@ HandlerFunc = Callable[[U], Awaitable[None]]
 FilterFunc = Union[Filter, Callable[[U], Union[bool, Awaitable[bool]]]]
 
 
-@dataclass
 class Handler:
-    callback: HandlerFunc
-    filters: List[FilterFunc]
-    priority: int = 0
+    def __init__(self, callback, filters, priority=0):
+        self.callback = callback
+        self.filters = filters
+        self.priority = priority
+
+    def __hash__(self):
+        return hash(
+            (id(self.callback), tuple(id(f) for f in self.filters), self.priority)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, Handler):
+            return False
+        return (
+            self.callback == other.callback
+            and self.filters == other.filters
+            and self.priority == other.priority
+        )
 
 
 class BaseHandler:
