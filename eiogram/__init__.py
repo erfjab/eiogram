@@ -1,5 +1,4 @@
-from .core import Bot, Router, Dispatcher
-from . import types
-from . import utils
+from .client import Bot, BaseMiddleware
+from .dispatcher import Dispatcher, Router
 
-__all__ = ["Bot", "Router", "Dispatcher", "utils", "types"]
+__all__ = ["Bot", "BaseMiddleware", "Dispatcher", "Router"]

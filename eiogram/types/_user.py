@@ -1,16 +1,13 @@
-from dataclasses import dataclass
 from typing import Optional
-from ._base import Validated
+from pydantic import BaseModel
 
 
-@dataclass
-class User(Validated):
+class User(BaseModel):
     id: int
     is_bot: bool
     first_name: str
     last_name: Optional[str] = None
     username: Optional[str] = None
-    language_code: Optional[str] = None
 
     @property
     def full_name(self) -> str:

@@ -1,7 +1,6 @@
+from typing import Optional
 from enum import StrEnum
-from dataclasses import dataclass
-from typing import Optional, Union
-from ._base import Validated
+from pydantic import BaseModel
 
 
 class ChatType(StrEnum):
@@ -11,35 +10,32 @@ class ChatType(StrEnum):
     CHANNEL = "channel"
 
 
-@dataclass
-class Chat(Validated):
+class Chat(BaseModel):
     id: int
-    type: Union[ChatType, str]
+    type: ChatType
     title: Optional[str] = None
     username: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
     @property
+    def full_name(self) -> str:
+        return (
+            f"{self.first_name} {self.last_name}" if self.last_name else self.first_name
+        )
+
+    @property
     def chatid(self) -> int:
         return self.id
 
     @property
-    def is_private(self) -> bool:
-        return self.type == ChatType.PRIVATE
-
-    @property
-    def full_name(self) -> str:
-        if self.title:
-            return self.title
-
-        if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name}"
-        return self.first_name
+    def mention(self) -> Optional[str]:
+        return f"@{self.username}" if self.username else None
 
     def __str__(self) -> str:
         return (
             f"Chat(id={self.id}, "
             f"name={self.full_name}, "
-            f"username={self.username or 'N/A'})"
+            f"username={self.username or 'N/A'}, "
+            f"type={self.type})"
         )
