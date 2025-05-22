@@ -76,6 +76,7 @@ class Dispatcher:
             update.message.set_bot(self.bot)
         if update.callback:
             update.callback.set_bot(self.bot)
+            update.callback.message.set_bot(self.bot)
 
         handler = await self._find_handler(update)
         if not handler:
@@ -109,6 +110,11 @@ class Dispatcher:
             kwargs["message"] = update.message
         if "callback" in sig.parameters and update.callback:
             kwargs["callback"] = update.callback
+            callback_data = sig.parameters.get("callback_data", None)
+            if callback_data:
+                kwargs["callback_data"] = callback_data.annotation.unpack(
+                    update.callback.data
+                )
         if "stats" in sig.parameters:
             kwargs["stats"] = StatsData(
                 key=int(update.origin.from_user.chatid), storage=self.storage
