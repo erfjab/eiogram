@@ -110,16 +110,16 @@ class Router:
 
             filter_passed = True
             for filter_func in handler.filters:
-                try:
+                if isinstance(filter_func, StatsFilter):
+                    result = filter_func(stats)
+                elif inspect.iscoroutinefunction(filter_func):
+                    result = await filter_func(update.origin)
+                else:
                     result = filter_func(update.origin)
-                    if inspect.isawaitable(result):
-                        result = await result
 
-                    if not result:
-                        filter_passed = False
-                        break
-                except Exception as e:
-                    raise ValueError(f"Filter evaluation failed: {str(e)}") from e
+                if not result:
+                    filter_passed = False
+                    break
 
             if filter_passed:
                 return handler
