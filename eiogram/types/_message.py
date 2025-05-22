@@ -1,5 +1,5 @@
 from typing import Optional, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
@@ -23,9 +23,10 @@ class Message(BaseModel):
     caption: Optional[str] = None
     bot: Optional[Bot] = None
 
-    class Config:
-        validate_by_name = True
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(
+        validate_by_name=True,
+        arbitrary_types_allowed=True
+    )
 
     @property
     def id(self) -> int:

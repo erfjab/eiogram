@@ -1,5 +1,5 @@
 from typing import Optional, Any, Union
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator, ConfigDict
 from ._message import Message
 from ._callback_query import CallbackQuery
 from ..client import Bot
@@ -12,14 +12,16 @@ class Update(BaseModel):
     data: dict[str, Any] = {}
     bot: Optional[Bot] = None
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="forbid"
+    )
 
     @property
     def origin(self) -> Optional[Union[Message, CallbackQuery]]:
         return self.message or self.callback_query
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def inject_bot_to_submodels(cls, values):
         bot = values.get("bot")
         if bot:

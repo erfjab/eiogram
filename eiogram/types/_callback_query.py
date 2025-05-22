@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from ._user import User
 from ._message import Message
 from ..client import Bot
@@ -12,10 +12,10 @@ class CallbackQuery(BaseModel):
     data: Optional[str] = None
     bot: Optional[Bot] = None
 
-    class Config:
-        validate_by_name = True
-        arbitrary_types_allowed = True
-
+    model_config = ConfigDict(
+        validate_by_name=True,
+        arbitrary_types_allowed=True
+    )
     def __str__(self) -> str:
         return f"CallbackQuery(id={self.id}, from={self.from_user.full_name}, data={self.data})"
 
