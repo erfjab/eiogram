@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Optional, Union, Tuple
 from ._handlers import (
     MessageHandler,
-    CallbackHandler,
+    CallbackQueryHandler,
     ErrorHandler,
     Handler,
 )
@@ -17,14 +17,14 @@ class Router:
     def __init__(self, name: Optional[str] = None):
         self.name = name or f"router_{id(self)}"
         self.message = MessageHandler()
-        self.callback = CallbackHandler()
+        self.callback_query = CallbackQueryHandler()
         self.middleware = MiddlewareHandler()
         self.error = ErrorHandler()
         self._parent_dispatcher: Optional[Dispatcher] = None
 
     def include_router(self, router: "Router") -> None:
         self.message.handlers.extend(router.message.handlers)
-        self.callback.handlers.extend(router.callback.handlers)
+        self.callback_query.handlers.extend(router.callback_query.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
         self.error.handlers.extend(router.error.handlers)
 
@@ -45,9 +45,9 @@ class Router:
                 priority=handler.priority,
             )
 
-        for handler in self.callback.handlers:
+        for handler in self.callback_query.handlers:
             dispatcher.register(
-                update_type="callback",
+                update_type="callback_query",
                 handler=handler.callback,
                 filters=handler.filters,
                 priority=handler.priority,

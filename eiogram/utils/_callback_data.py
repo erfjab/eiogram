@@ -11,7 +11,7 @@ from typing import (
 )
 from dataclasses import dataclass, fields
 from ..filters import Filter
-from ..types._callback import Callback
+from ..types._callback_query import CallbackQuery
 
 T = TypeVar("T", bound="CallbackData")
 
@@ -107,8 +107,8 @@ class CallbackDataFilter(Filter):
         self.conditions = conditions
         super().__init__(self._filter_func)
 
-    def _filter_func(self, callback: Callback) -> Union[bool, Any]:
-        if not isinstance(callback, Callback) or not callback.data:
+    def _filter_func(self, callback: CallbackQuery) -> Union[bool, Any]:
+        if not isinstance(callback, CallbackQuery) or not callback.data:
             return False
 
         try:

@@ -1,12 +1,12 @@
 from ._error import ErrorHandler
-from ._callback import CallbackHandler
+from ._callback_query import CallbackQueryHandler
 from ._message import MessageHandler
 from ._base import Handler, BaseHandler, FilterFunc, HandlerFunc
 
 __all__ = [
     "Middleware",
     "ErrorHandler",
-    "CallbackHandler",
+    "CallbackQueryHandler",
     "MessageHandler",
     "MiddlewareHandler",
     "Handler",

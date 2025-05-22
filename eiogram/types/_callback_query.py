@@ -8,7 +8,7 @@ from ..core._bot import Bot
 
 
 @dataclass
-class Callback(Validated):
+class CallbackQuery(Validated):
     id: str
     from_user: Optional[User] = None
     message: Optional[Message] = None
@@ -37,4 +37,4 @@ class Callback(Validated):
             if self.is_inline
             else f"msg:{self.message.id}"
         )
-        return f"Callback(id={self.id}, from={self.from_user.full_name}, data={self.data}, source={source})"
+        return f"CallbackQuery(id={self.id}, from={self.from_user.full_name}, data={self.data}, source={source})"

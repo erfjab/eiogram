@@ -26,7 +26,7 @@ class Dispatcher:
         self.bot = bot
         self.handlers: Dict[str, List[Handler]] = {
             "message": [],
-            "callback": [],
+            "callback_query": [],
         }
         self.middlewares: List[BaseMiddleware] = []
         self.error = ErrorHandler()
@@ -74,8 +74,8 @@ class Dispatcher:
     async def process(self, update: Update) -> None:
         if update.message:
             update.message.set_bot(self.bot)
-        if update.callback:
-            update.callback.set_bot(self.bot)
+        if update.callback_query:
+            update.callback_query.set_bot(self.bot)
             update.callback.message.set_bot(self.bot)
 
         handler = await self._find_handler(update)
@@ -108,8 +108,8 @@ class Dispatcher:
             kwargs["bot"] = self.bot
         if "message" in sig.parameters and update.message:
             kwargs["message"] = update.message
-        if "callback" in sig.parameters and update.callback:
-            kwargs["callback"] = update.callback
+        if "callback_query" in sig.parameters and update.callback:
+            kwargs["callback_query"] = update.callback
             callback_data = sig.parameters.get("callback_data", None)
             if callback_data:
                 kwargs["callback_data"] = callback_data.annotation.unpack(

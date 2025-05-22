@@ -4,19 +4,19 @@ from ._base import BaseHandler
 from ...types import Callback
 from ...filters import Filter
 
-CallbackT = TypeVar("CallbackT", bound=Callback)
-CallbackHandlerFunc = Callable[[CallbackT], Awaitable[None]]
+CallbackQueryT = TypeVar("CallbackQueryT", bound=Callback)
+CallbackQueryHandlerFunc = Callable[[CallbackQueryT], Awaitable[None]]
 FilterFunc = Union[Filter, Callable[[Callback], Union[bool, Awaitable[bool]]]]
 
 
-class CallbackHandler(BaseHandler):
+class CallbackQueryHandler(BaseHandler):
     def __init__(self):
-        super().__init__(update_type="callback")
+        super().__init__(update_type="callback_query")
 
     def __call__(
         self, *filters: FilterFunc, priority: int = 0
-    ) -> Callable[[CallbackHandlerFunc], CallbackHandlerFunc]:
-        def decorator(func: CallbackHandler) -> CallbackHandler:
+    ) -> Callable[[CallbackQueryHandlerFunc], CallbackQueryHandlerFunc]:
+        def decorator(func: CallbackQueryHandler) -> CallbackQueryHandler:
             return self.register(func, list(filters), priority)
 
         return decorator

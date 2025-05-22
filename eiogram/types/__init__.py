@@ -1,7 +1,7 @@
 from ._chat import Chat, ChatType
 from ._user import User
 from ._message import Message
-from ._callback import Callback
+from ._callback_query import CallbackQuery
 from ._inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 from ._me import Me
 from ._update import Update
@@ -14,7 +14,7 @@ __all__ = [
     "ChatType",
     "User",
     "Message",
-    "Callback",
+    "CallbackQuery",
     "BotCommand",
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",

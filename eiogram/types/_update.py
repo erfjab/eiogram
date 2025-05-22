@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, Union
 from ._message import Message
-from ._callback import Callback
+from ._callback_query import CallbackQuery
 from ._base import Validated
 
 
@@ -9,20 +9,20 @@ from ._base import Validated
 class Update(Validated):
     update_id: int
     message: Optional[Message] = None
-    callback: Optional[Callback] = None
+    callback_query: Optional[CallbackQuery] = None
     data: dict = field(default_factory=dict)
 
     @property
     def type(self) -> Optional[str]:
         if self.message:
             return "message"
-        if self.callback:
-            return "callback"
+        if self.callback_query:
+            return "callback_query"
         return None
 
     @property
-    def origin(self) -> Union["Message", "Callback", None]:
-        return self.message or self.callback
+    def origin(self) -> Union["Message", "CallbackQuery", None]:
+        return self.message or self.callback_query
 
     def __getitem__(self, key: str):
         return self.data.get(key)
