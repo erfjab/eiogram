@@ -86,45 +86,42 @@ class Router:
         )
 
     async def matches_update(self, update: Update) -> Union[bool, Handler]:
-        try:
-            is_message = update.message is not None
-            handlers_tuple = self._get_handlers(is_message)
+        is_message = update.message is not None
+        handlers_tuple = self._get_handlers(is_message)
 
-            if not handlers_tuple:
-                return False
-
-            stats = await self._parent_dispatcher.storage.get_stats(
-                update.origin.from_user.chatid
-            )
-
-            if stats:
-                filtered_handlers = self._get_stats_handlers(handlers_tuple)
-            else:
-                filtered_handlers = self._get_non_stats_handlers(handlers_tuple)
-
-            if not filtered_handlers:
-                return False
-
-            for handler in filtered_handlers:
-                if not handler.filters:
-                    return handler
-
-                filter_passed = True
-                for filter_func in handler.filters:
-                    try:
-                        result = filter_func(update.origin)
-                        if inspect.isawaitable(result):
-                            result = await result
-
-                        if not result:
-                            filter_passed = False
-                            break
-                    except Exception as e:
-                        raise ValueError(f"Filter evaluation failed: {str(e)}") from e
-
-                if filter_passed:
-                    return handler
-
+        if not handlers_tuple:
             return False
-        except Exception as e:
-            raise RuntimeError(f"Update matching failed: {str(e)}") from e
+
+        stats = await self._parent_dispatcher.storage.get_stats(
+            update.origin.from_user.chatid
+        )
+
+        if stats:
+            filtered_handlers = self._get_stats_handlers(handlers_tuple)
+        else:
+            filtered_handlers = self._get_non_stats_handlers(handlers_tuple)
+
+        if not filtered_handlers:
+            return False
+
+        for handler in filtered_handlers:
+            if not handler.filters:
+                return handler
+
+            filter_passed = True
+            for filter_func in handler.filters:
+                try:
+                    result = filter_func(update.origin)
+                    if inspect.isawaitable(result):
+                        result = await result
+
+                    if not result:
+                        filter_passed = False
+                        break
+                except Exception as e:
+                    raise ValueError(f"Filter evaluation failed: {str(e)}") from e
+
+            if filter_passed:
+                return handler
+
+        return False

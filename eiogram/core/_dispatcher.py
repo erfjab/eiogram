@@ -46,12 +46,7 @@ class Dispatcher:
         for middleware in reversed(self.middlewares):
             final_handler = self._wrap_middleware(middleware, final_handler)
 
-        try:
-            return await final_handler(update, data)
-        except Exception as e:
-            if not await self.error.handle(e):
-                raise
-            raise RuntimeError(f"Middleware processing failed: {str(e)}") from e
+        return await final_handler(update, data)
 
     def _wrap_middleware(
         self,
@@ -77,24 +72,19 @@ class Dispatcher:
         self.handlers[update_type].sort(key=lambda x: x.priority, reverse=True)
 
     async def process(self, update: Update) -> None:
-        try:
-            if update.message:
-                update.message.set_bot(self.bot)
-            if update.callback:
-                update.callback.set_bot(self.bot)
+        if update.message:
+            update.message.set_bot(self.bot)
+        if update.callback:
+            update.callback.set_bot(self.bot)
 
-            handler = await self._find_handler(update)
-            if not handler:
-                raise ValueError("No matching handler found for update")
+        handler = await self._find_handler(update)
+        if not handler:
+            raise ValueError("No matching handler found for update")
 
-            async def handler_wrapper(update: U, data: Dict[str, Any]) -> None:
-                await self._run_handler(handler.callback, update, data)
+        async def handler_wrapper(update: U, data: Dict[str, Any]) -> None:
+            await self._run_handler(handler.callback, update, data)
 
-            await self._process_middlewares(update, handler_wrapper)
-
-        except Exception as e:
-            if not await self.error.handle(e):
-                raise
+        await self._process_middlewares(update, handler_wrapper)
 
     async def _find_handler(self, update: Update) -> Optional[Handler]:
         for router in self.routers:
@@ -131,7 +121,4 @@ class Dispatcher:
             elif hasattr(update, param):
                 kwargs[param] = getattr(update, param)
 
-        try:
-            await callback(**kwargs)
-        except Exception as e:
-            raise RuntimeError(f"Handler execution failed: {str(e)}") from e
+        await callback(**kwargs)
