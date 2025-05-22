@@ -10,7 +10,7 @@ class CallbackQuery(BaseModel):
     from_user: User = Field(..., alias="from")
     message: Optional[Message] = None
     data: Optional[str] = None
-    bot: Bot
+    bot: Optional[Bot] = None
 
     class Config:
         validate_by_name = True

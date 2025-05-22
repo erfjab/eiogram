@@ -21,7 +21,7 @@ class Message(BaseModel):
     text: Optional[str] = None
     photo: Optional[list[PhotoSize]] = None
     caption: Optional[str] = None
-    bot: Bot
+    bot: Optional[Bot] = None
 
     class Config:
         validate_by_name = True
