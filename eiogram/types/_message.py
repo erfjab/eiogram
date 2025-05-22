@@ -1,11 +1,9 @@
-from typing import Optional, TYPE_CHECKING, Union
-from pydantic import BaseModel
+from typing import Optional, Union
+from pydantic import BaseModel, Field
 from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
-
-if TYPE_CHECKING:
-    from ..client import Bot
+from ..client import Bot
 
 
 class PhotoSize(BaseModel):
@@ -18,13 +16,16 @@ class PhotoSize(BaseModel):
 
 class Message(BaseModel):
     message_id: int
-    message_thread_id: int
-    from_user: User
+    from_user: User = Field(..., alias="from")
     chat: Chat
     text: Optional[str] = None
     photo: Optional[list[PhotoSize]] = None
     caption: Optional[str] = None
     bot: Bot
+
+    class Config:
+        validate_by_name = True
+        arbitrary_types_allowed = True
 
     @property
     def id(self) -> int:

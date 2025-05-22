@@ -1,18 +1,20 @@
-from typing import Optional, TYPE_CHECKING
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, Field
 from ._user import User
 from ._message import Message
-
-if TYPE_CHECKING:
-    from ..client import Bot
+from ..client import Bot
 
 
 class CallbackQuery(BaseModel):
     id: str
-    from_user: Optional[User] = None
+    from_user: User = Field(..., alias="from")
     message: Optional[Message] = None
     data: Optional[str] = None
     bot: Bot
+
+    class Config:
+        validate_by_name = True
+        arbitrary_types_allowed = True
 
     def __str__(self) -> str:
         return f"CallbackQuery(id={self.id}, from={self.from_user.full_name}, data={self.data})"

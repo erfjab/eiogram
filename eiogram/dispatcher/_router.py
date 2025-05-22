@@ -86,6 +86,6 @@ class Router:
                     break
 
             if filter_passed:
-                return handler, self.middleware
+                return handler
 
         return False
