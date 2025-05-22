@@ -33,9 +33,6 @@ class Message(Validated):
             raise AttributeError("Bot instance not set. Use Message.set_bot() first.")
         return self._bot
 
-    def set_bot(self, bot):
-        self._bot = bot
-
     @property
     def id(self) -> int:
         return self.message_id

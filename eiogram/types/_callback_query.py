@@ -23,10 +23,6 @@ class CallbackQuery(Validated):
             raise AttributeError("Bot instance not set. Use Message.set_bot() first.")
         return self._bot
 
-    @classmethod
-    def set_bot(cls, bot_instance):
-        cls._bot = bot_instance
-
     @property
     def is_inline(self) -> bool:
         return self.inline_message_id is not None

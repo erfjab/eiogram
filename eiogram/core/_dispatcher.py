@@ -72,12 +72,7 @@ class Dispatcher:
         self.handlers[update_type].sort(key=lambda x: x.priority, reverse=True)
 
     async def process(self, update: Update) -> None:
-        if update.message:
-            update.message.set_bot(self.bot)
-        if update.callback_query:
-            update.callback_query.set_bot(self.bot)
-            update.callback.message.set_bot(self.bot)
-
+        update.bot = self.bot
         handler = await self._find_handler(update)
         if not handler:
             raise ValueError("No matching handler found for update")
@@ -113,7 +108,7 @@ class Dispatcher:
             callback_data = sig.parameters.get("callback_data", None)
             if callback_data:
                 kwargs["callback_data"] = callback_data.annotation.unpack(
-                    update.callback.data
+                    update.callback_query.data
                 )
         if "stats" in sig.parameters:
             kwargs["stats"] = StatsData(
