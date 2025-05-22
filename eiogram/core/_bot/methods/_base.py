@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 import aiohttp
 import asyncio
-from ..utils._exceptions import (
+from eiogram.utils._exceptions import (
     TelegramError,
     TelegramAPIError,
     TimeoutError,
@@ -16,7 +16,7 @@ class MethodBase:
     def __init__(self, token: str):
         self.token = token
         self.base_url = f"https://api.telegram.org/bot{self.token}/"
-        from ..core._bot import Bot
+        from .._bot import Bot
 
         self.bot = Bot(token=self.token)
 
