@@ -1,5 +1,5 @@
 from typing import Optional, Union
-from ..types import Message, InlineKeyboardMarkup
+from eiogram.types import Message, InlineKeyboardMarkup
 from ._base import MethodBase
 
 

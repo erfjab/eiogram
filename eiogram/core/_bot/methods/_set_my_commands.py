@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from ..types import BotCommand
+from eiogram.types import BotCommand
 from ._base import MethodBase
 
 
