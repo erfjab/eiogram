@@ -1,5 +1,6 @@
 import inspect
-from typing import Optional, Union
+from functools import lru_cache
+from typing import Optional, Union, Tuple
 from ._handlers import (
     MessageHandler,
     CallbackHandler,
@@ -13,7 +14,7 @@ from ._handlers._middleware import MiddlewareHandler
 
 
 class Router:
-    def __init__(self, name: str = None):
+    def __init__(self, name: Optional[str] = None):
         self.name = name or f"router_{id(self)}"
         self.message = MessageHandler()
         self.callback = CallbackHandler()
@@ -31,9 +32,9 @@ class Router:
         self._parent_dispatcher = dispatcher
 
         # Register middlewares
-        for mw in self.middleware.middlewares:
-            dispatcher.middlewares.append(mw)
-        dispatcher.middlewares.sort(key=lambda m: m.priority, reverse=True)
+        if self.middleware.middlewares:
+            dispatcher.middlewares.extend(self.middleware.middlewares)
+            dispatcher.middlewares.sort(key=lambda m: m.priority, reverse=True)
 
         # Register handlers
         for handler in self.message.handlers:
@@ -56,36 +57,55 @@ class Router:
         for handler in self.error.handlers:
             dispatcher.error.handlers.append(handler)
 
+    @lru_cache(maxsize=None)
+    def _get_handlers(self, is_message: bool) -> Tuple[Handler, ...]:
+        """Get handlers with caching based on update type"""
+        handlers = self.message.handlers if is_message else self.callback.handlers
+        return tuple(handlers)
+
+    @lru_cache(maxsize=None)
+    def _get_non_stats_handlers(
+        self, handlers_tuple: Tuple[Handler, ...]
+    ) -> Tuple[Handler, ...]:
+        """Get handlers without StatsFilter with caching"""
+        return tuple(
+            handler
+            for handler in handlers_tuple
+            if not any(isinstance(f, StatsFilter) for f in handler.filters)
+        )
+
+    @lru_cache(maxsize=None)
+    def _get_stats_handlers(
+        self, handlers_tuple: Tuple[Handler, ...]
+    ) -> Tuple[Handler, ...]:
+        """Get handlers with StatsFilter with caching"""
+        return tuple(
+            handler
+            for handler in handlers_tuple
+            if any(isinstance(f, StatsFilter) for f in handler.filters)
+        )
+
     async def matches_update(self, update: Update) -> Union[bool, Handler]:
         try:
-            handlers = (
-                self.message.handlers if update.message else self.callback.handlers
-            )
-            if not handlers:
+            is_message = update.message is not None
+            handlers_tuple = self._get_handlers(is_message)
+
+            if not handlers_tuple:
                 return False
 
-            stats = None
-            needs_stats = any(
-                isinstance(f, StatsFilter)
-                for handler in handlers
-                for f in handler.filters
+            stats = await self._parent_dispatcher.storage.get_stats(
+                update.origin.from_user.chatid
             )
 
-            if needs_stats:
-                stats = await self._parent_dispatcher.storage.get_stats(
-                    update.origin.from_user.chatid
-                )
+            if stats:
+                filtered_handlers = self._get_stats_handlers(handlers_tuple)
+            else:
+                filtered_handlers = self._get_non_stats_handlers(handlers_tuple)
 
-            for handler in handlers:
-                if needs_stats and not stats:
-                    continue
+            if not filtered_handlers:
+                return False
 
-                if (
-                    any(isinstance(f, StatsFilter) for f in handler.filters)
-                    and not stats
-                ):
-                    continue
-
+            for handler in filtered_handlers:
                 if not handler.filters:
                     return handler
 

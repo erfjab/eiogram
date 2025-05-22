@@ -22,7 +22,7 @@ U = TypeVar("U", bound=Union[Update, Message, Callback])
 
 
 class Dispatcher:
-    def __init__(self, bot: Any, storage: BaseStorage = MemoryStorage()):
+    def __init__(self, bot: Any, storage: Optional[BaseStorage] = None):
         self.bot = bot
         self.handlers: Dict[str, List[Handler]] = {
             "message": [],
@@ -31,7 +31,7 @@ class Dispatcher:
         self.middlewares: List[BaseMiddleware] = []
         self.error = ErrorHandler()
         self.routers: List["Router"] = []
-        self.storage = storage
+        self.storage = storage or MemoryStorage()
 
     def include_router(self, router: "Router") -> None:
         self.routers.append(router)

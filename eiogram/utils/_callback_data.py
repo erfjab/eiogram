@@ -10,7 +10,7 @@ from typing import (
     get_args,
 )
 from dataclasses import dataclass, fields
-from ._filters import Filter
+from ..filters import Filter
 from ..types._callback import Callback
 
 T = TypeVar("T", bound="CallbackData")
