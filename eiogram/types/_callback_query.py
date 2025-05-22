@@ -20,7 +20,7 @@ class CallbackQuery(Validated):
     @property
     def bot(self) -> Bot:
         if self._bot is None:
-            raise AttributeError("Bot instance not set. Use Message.set_bot() first.")
+            raise AttributeError("Bot instance not set. Use Message._bot first.")
         return self._bot
 
     @property

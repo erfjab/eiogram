@@ -25,5 +25,5 @@ class SendMessage(MethodBase):
 
         response = await self._make_request("POST", "sendMessage", data)
         message = Message.from_dict(response["result"])
-        message.set_bot(self.bot)
+        message.bot(self.bot)
         return message

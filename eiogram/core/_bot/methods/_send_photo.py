@@ -23,5 +23,5 @@ class SendPhoto(MethodBase):
 
         response = await self._make_request("POST", "sendPhoto", data)
         message = Message.from_dict(response["result"])
-        message.set_bot(self.bot)
+        message.bot(self.bot)
         return message

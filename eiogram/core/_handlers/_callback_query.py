@@ -1,12 +1,12 @@
 from typing import Callable, Awaitable, Union, TypeVar
 
 from ._base import BaseHandler
-from ...types import Callback
+from ...types import CallbackQuery
 from ...filters import Filter
 
-CallbackQueryT = TypeVar("CallbackQueryT", bound=Callback)
+CallbackQueryT = TypeVar("CallbackQueryT", bound=CallbackQuery)
 CallbackQueryHandlerFunc = Callable[[CallbackQueryT], Awaitable[None]]
-FilterFunc = Union[Filter, Callable[[Callback], Union[bool, Awaitable[bool]]]]
+FilterFunc = Union[Filter, Callable[[CallbackQuery], Union[bool, Awaitable[bool]]]]
 
 
 class CallbackQueryHandler(BaseHandler):

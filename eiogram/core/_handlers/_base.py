@@ -1,8 +1,8 @@
 from typing import Callable, List, Optional, TypeVar, Union, Awaitable
-from ...types import Update, Message, Callback
+from ...types import Update, Message, CallbackQuery
 from ...filters import Filter
 
-U = TypeVar("U", bound=Union[Update, Message, Callback])
+U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 HandlerFunc = Callable[[U], Awaitable[None]]
 FilterFunc = Union[Filter, Callable[[U], Union[bool, Awaitable[bool]]]]
 

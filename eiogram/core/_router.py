@@ -60,7 +60,7 @@ class Router:
     @lru_cache(maxsize=None)
     def _get_handlers(self, is_message: bool) -> Tuple[Handler, ...]:
         """Get handlers with caching based on update type"""
-        handlers = self.message.handlers if is_message else self.callback.handlers
+        handlers = self.message.handlers if is_message else self.callback_query.handlers
         return tuple(handlers)
 
     @lru_cache(maxsize=None)

@@ -11,14 +11,14 @@ from typing import (
 )
 import inspect
 from ._handlers import Handler, ErrorHandler, FilterFunc
-from ..types import Update, Message, Callback
+from ..types import Update, Message, CallbackQuery
 from ..stats import BaseStorage, MemoryStorage, StatsData
 from .middlewares import BaseMiddleware
 
 if TYPE_CHECKING:
     from ._router import Router
 
-U = TypeVar("U", bound=Union[Update, Message, Callback])
+U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 
 
 class Dispatcher:
