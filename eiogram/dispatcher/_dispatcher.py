@@ -17,6 +17,9 @@ class Dispatcher:
         self.routers: List[Router] = []
         self.storage = storage or MemoryStorage()
 
+    def include_router(self, router: "Router") -> None:
+        self.routers.append(router)
+
     async def process(self, update: Update) -> None:
         handler, middlewares = await self._find_handler(update=update)
         if not handler:
