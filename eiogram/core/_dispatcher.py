@@ -75,7 +75,7 @@ class Dispatcher:
         update.bot = self.bot
         handler = await self._find_handler(update)
         if not handler:
-            raise ValueError("No matching handler found for update")
+            return False
 
         async def handler_wrapper(update: U, data: Dict[str, Any]) -> None:
             await self._run_handler(handler.callback, update, data)
@@ -103,8 +103,8 @@ class Dispatcher:
             kwargs["bot"] = self.bot
         if "message" in sig.parameters and update.message:
             kwargs["message"] = update.message
-        if "callback_query" in sig.parameters and update.callback:
-            kwargs["callback_query"] = update.callback
+        if "callback_query" in sig.parameters and update.callback_query:
+            kwargs["callback_query"] = update.callback_query
             callback_data = sig.parameters.get("callback_data", None)
             if callback_data:
                 kwargs["callback_data"] = callback_data.annotation.unpack(

@@ -27,6 +27,13 @@ class CallbackQuery(Validated):
     def is_inline(self) -> bool:
         return self.inline_message_id is not None
 
+    def answer(
+        self, text: Optional[str] = None, show_alert: Optional[bool] = None
+    ) -> bool:
+        return self.bot.answer_callback(
+            callback_query_id=self.id, text=text, show_alert=show_alert
+        )
+
     def __str__(self) -> str:
         source = (
             f"inline:{self.inline_message_id}"

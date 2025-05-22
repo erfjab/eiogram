@@ -6,6 +6,7 @@ from ._pin_message import PinMessage
 from ._delete_messages import DeleteMessages
 from ._set_webhook import SetWebhook
 from ._set_my_commands import SetMyCommands
+from ._answer_callback import AnswerCallbackQuery
 
 __all__ = [
     "GetMe",
@@ -16,4 +17,5 @@ __all__ = [
     "DeleteMessages",
     "SetWebhook",
     "SetMyCommands",
+    "AnswerCallbackQuery",
 ]

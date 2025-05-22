@@ -129,3 +129,15 @@ class Bot:
         return await DeleteMessages(self.token).execute(
             chat_id=chat_id, message_ids=message_ids
         )
+
+    async def answer_callback(
+        self,
+        callback_query_id: str,
+        text: Optional[str] = None,
+        show_alert: Optional[bool] = None,
+    ) -> bool:
+        from .methods._answer_callback import AnswerCallbackQuery
+
+        return await AnswerCallbackQuery(self.token).execute(
+            callback_query_id=callback_query_id, text=text, show_alert=show_alert
+        )
