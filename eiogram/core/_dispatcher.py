@@ -12,7 +12,7 @@ from typing import (
 import inspect
 from ._handlers import Handler, ErrorHandler, FilterFunc
 from ..types import Update, Message, Callback
-from ..utils._stats import BaseStorage, MemoryStorage, StatsData
+from ..stats import BaseStorage, MemoryStorage, StatsData
 from .middlewares import BaseMiddleware
 
 if TYPE_CHECKING:

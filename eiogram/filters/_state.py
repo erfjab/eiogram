@@ -1,6 +1,6 @@
 from typing import Optional
 from ._base import Filter
-from ..utils._stats import State
+from ..stats import State
 
 
 class StatsFilter(Filter):

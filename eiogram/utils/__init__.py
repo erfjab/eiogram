@@ -8,7 +8,6 @@ from ._exceptions import (
     UnauthorizedError,
 )
 from ._inline_builder import InlineKeyboardButton, InlineKeyboardBuilder
-from ._stats import StatsData, State, StatsGroup, BaseStorage
 
 __all__ = [
     "CallbackData",
@@ -20,8 +19,4 @@ __all__ = [
     "UnauthorizedError",
     "InlineKeyboardButton",
     "InlineKeyboardBuilder",
-    "StatsData",
-    "State",
-    "StatsGroup",
-    "BaseStorage",
 ]
