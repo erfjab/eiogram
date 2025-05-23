@@ -1,24 +1,18 @@
-import inspect
-from typing import (
-    Type,
-    TypeVar,
-    Any,
-    Dict,
-    Union,
-    get_type_hints,
-    get_origin,
-    get_args,
-)
-from dataclasses import dataclass, fields
+from typing import Type, TypeVar, Any, Union, get_origin, get_args, ClassVar
+from pydantic import BaseModel, ValidationError, field_validator, ConfigDict
 from ..filters import Filter
 from ..types._callback_query import CallbackQuery
 
 T = TypeVar("T", bound="CallbackData")
 
 
-class CallbackData:
-    _prefix: str
-    _sep: str = ":"
+class CallbackData(BaseModel):
+    _prefix: ClassVar[str] = ""
+    _sep: ClassVar[str] = ":"
+
+    model_config = ConfigDict(
+        extra="forbid", validate_assignment=True, ignored_types=(type(ClassVar),)
+    )
 
     def __init_subclass__(cls, prefix: str, sep: str = ":", **kwargs):
         cls._prefix = prefix
@@ -27,8 +21,8 @@ class CallbackData:
 
     def pack(self) -> str:
         parts = [self._prefix]
-        for field in fields(self):
-            value = getattr(self, field.name)
+        for field_name, field in self.model_fields.items():
+            value = getattr(self, field_name)
             parts.append(str(value) if value is not None else "")
         return self._sep.join(parts)
 
@@ -38,70 +32,58 @@ class CallbackData:
             raise ValueError("Invalid callback_data format")
 
         parts = data.split(cls._sep)
-        field_types = get_type_hints(cls)
-        field_list = list(fields(cls))
+        field_names = list(cls.model_fields.keys())
+
+        if len(parts) - 1 > len(field_names):
+            raise ValueError("Too many fields in callback data")
 
         kwargs = {}
-        for i, field in enumerate(field_list, start=1):
+        for i, field_name in enumerate(field_names, start=1):
             if i >= len(parts):
                 value = None
             else:
                 value = parts[i] if parts[i] != "" else None
 
             if value is not None:
-                field_type = field_types[field.name]
-                kwargs[field.name] = cls._convert_value(value, field_type)
-            elif field.default is inspect.Parameter.empty:
-                raise ValueError(f"Missing required field: {field.name}")
+                kwargs[field_name] = value
 
-        return cls(**kwargs)
+        try:
+            return cls(**kwargs)
+        except ValidationError as e:
+            raise ValueError(f"Invalid callback data: {e}") from e
 
-    @staticmethod
-    def _convert_value(value: str, target_type: Any) -> Any:
+    @field_validator("*", mode="before")
+    @classmethod
+    def convert_types(cls, value: Any, info):
+        if value is None:
+            return None
+
+        field = info.field_name
+        field_info = cls.model_fields[field]
+        target_type = field_info.annotation
+
         if get_origin(target_type) is Union:
-            possible_types = get_args(target_type)
-            for t in possible_types:
-                try:
-                    return CallbackData._convert_single_value(value, t)
-                except (ValueError, TypeError):
-                    continue
-            raise ValueError(f"Could not convert {value} to any of {possible_types}")
-        return CallbackData._convert_single_value(value, target_type)
+            possible_types = [t for t in get_args(target_type) if t is not type(None)]
+            if not possible_types:
+                return None
+            target_type = possible_types[0]
 
-    @staticmethod
-    def _convert_single_value(value: str, target_type: Any) -> Any:
         if target_type is str:
-            return value
+            return str(value)
         elif target_type is int:
             return int(value)
         elif target_type is float:
             return float(value)
         elif target_type is bool:
-            return value.lower() == "true"
-        else:
-            raise ValueError(f"Unsupported type: {target_type}")
+            return str(value).lower() in ("true", "1", "yes")
+        return value
 
     @classmethod
     def filter(cls: Type[T], **conditions: Any) -> "CallbackDataFilter[T]":
         return CallbackDataFilter(cls, **conditions)
 
-    @classmethod
-    def has(cls, **fields: bool) -> "CallbackDataFilter[T]":
-        conditions = {}
-        for field_name, should_exist in fields.items():
-            conditions[field_name] = (
-                (lambda val: val is not None)
-                if should_exist
-                else (lambda val: val is None)
-            )
-        return cls.filter(**conditions)
 
-
-@dataclass
 class CallbackDataFilter(Filter):
-    callback_data_class: Type[CallbackData]
-    conditions: Dict[str, Any]
-
     def __init__(self, callback_data_class: Type[CallbackData], **conditions):
         self.callback_data_class = callback_data_class
         self.conditions = conditions
@@ -117,7 +99,7 @@ class CallbackDataFilter(Filter):
             return False
 
         for field_name, expected_value in self.conditions.items():
-            if not hasattr(data, field_name):
+            if field_name not in self.callback_data_class.model_fields:
                 return False
 
             actual_value = getattr(data, field_name)
