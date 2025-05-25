@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Awaitable
 from abc import ABC, abstractmethod
-from ...types import Update
+from ..types import Update
 
 
 class BaseMiddleware(ABC):

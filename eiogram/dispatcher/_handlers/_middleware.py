@@ -1,5 +1,5 @@
 from typing import List
-from ...client.middleware import BaseMiddleware
+from ...middleware import BaseMiddleware
 
 
 class MiddlewareHandler:
