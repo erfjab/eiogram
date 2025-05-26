@@ -1,7 +1,13 @@
 from typing import Optional, Union, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..types import User, Message, InlineKeyboardMarkup, BotCommand
+    from ..types import (
+        User,
+        Message,
+        InlineKeyboardMarkup,
+        BotCommand,
+        ChatMemberStatus,
+    )
 
 
 class Bot:
@@ -43,6 +49,18 @@ class Bot:
             chat_id=chat_id,
             user_id=user_id,
             until_date=until_date,
+        )
+
+    async def get_chat_member(
+        self,
+        chat_id: Union[int, str],
+        user_id: int,
+    ) -> "ChatMemberStatus":
+        from .methods._get_chat_member import GetChatMember
+
+        return await GetChatMember(self.token).execute(
+            chat_id=chat_id,
+            user_id=user_id,
         )
 
     async def set_my_commands(

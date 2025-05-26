@@ -39,6 +39,22 @@ class Message(BaseModel):
         media_info = f", media={self.photo[0].file_id}" if self.photo else ""
         return f"Message(id={self.id}, text={self.context or 'None'}{media_info})"
 
+    async def is_join(
+        self,
+        chat_id: Union[str, int],
+    ) -> bool:
+        from ._chat import ChatMemberStatus
+
+        status = await self.bot.get_chat_member(chat_id=chat_id, user_id=self.chat.id)
+        if status and status in [
+            ChatMemberStatus.ADMINISTRATOR,
+            ChatMemberStatus.CREATOR,
+            ChatMemberStatus.MEMBER,
+            ChatMemberStatus.RESTRICTED,
+        ]:
+            return True
+        return False
+
     async def answer(
         self,
         text: str,

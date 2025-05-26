@@ -9,6 +9,7 @@ from ._set_my_commands import SetMyCommands
 from ._delete_webhook import DeleteWebhook
 from ._set_webhook import SetWebhook
 from ._pin_message import PinMessage
+from ._get_chat_member import GetChatMember
 
 __all__ = [
     "AnswerCallbackQuery",
@@ -22,4 +23,5 @@ __all__ = [
     "DeleteWebhook",
     "SetWebhook",
     "PinMessage",
+    "GetChatMember",
 ]
