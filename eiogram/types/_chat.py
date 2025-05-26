@@ -10,6 +10,15 @@ class ChatType(StrEnum):
     CHANNEL = "channel"
 
 
+class ChatMemberStatus(StrEnum):
+    CREATOR = "creator"
+    ADMINISTRATOR = "administrator"
+    MEMBER = "member"
+    RESTRICTED = "restricted"
+    LEFT = "left"
+    KICKED = "kicked"
+
+
 class Chat(BaseModel):
     id: int
     type: ChatType
