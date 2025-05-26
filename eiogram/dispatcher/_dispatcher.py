@@ -7,6 +7,7 @@ from ..types import Update, Message, CallbackQuery
 from ..stats.storage import BaseStorage, MemoryStorage
 from ..stats import StatsManager
 from ..utils.callback_data import CallbackData
+from ._handlers import FallbackHandler
 
 U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 
@@ -16,6 +17,7 @@ class Dispatcher:
         self.bot = bot
         self.routers: List[Router] = []
         self.storage = storage or MemoryStorage()
+        self.fallback = FallbackHandler()
 
     def include_router(self, router: "Router") -> None:
         self.routers.append(router)
@@ -23,6 +25,8 @@ class Dispatcher:
     async def process(self, update: Update) -> None:
         handler, middlewares = await self._find_handler(update=update)
         if not handler:
+            if self.fallback.handler:
+                await self.fallback.handler(update)
             return
 
         final_handler = await self._build_final_handler(handler.callback, update)
