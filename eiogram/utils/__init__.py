@@ -8,6 +8,7 @@ from .exceptions import (
     UnauthorizedError,
 )
 from .inline_builder import InlineKeyboardButton, InlineKeyboardBuilder
+from .html_parse import MessageParser
 
 __all__ = [
     "NetworkError",
@@ -19,4 +20,5 @@ __all__ = [
     "InlineKeyboardButton",
     "InlineKeyboardBuilder",
     "CallbackData",
+    "MessageParser",
 ]

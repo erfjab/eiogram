@@ -1,9 +1,29 @@
-from typing import Optional, Union
+from enum import StrEnum
+from typing import Optional, Union, List
 from pydantic import BaseModel, Field
 from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
 from ..client import Bot
+
+
+class EntityType(StrEnum):
+    MENTION = "mention"
+    HASHTAG = "hashtag"
+    CASHTAG = "cashtag"
+    BOT_COMMAND = "bot_command"
+    URL = "url"
+    EMAIL = "email"
+    PHONE_NUMBER = "phone_number"
+    BOLD = "bold"
+    ITALIC = "italic"
+    UNDERLINE = "underline"
+    STRIKETHROUGH = "strikethrough"
+    SPOILER = "spoiler"
+    CODE = "code"
+    PRE = "pre"
+    TEXT_LINK = "text_link"
+    TEXT_MENTION = "text_mention"
 
 
 class PhotoSize(BaseModel):
@@ -14,6 +34,14 @@ class PhotoSize(BaseModel):
     file_size: Optional[int] = None
 
 
+class MessageEntity(BaseModel):
+    type: EntityType
+    offset: int
+    length: int
+    url: Optional[str] = None
+    user: Optional["User"] = None
+
+
 class Message(BaseModel):
     message_id: int
     from_user: User = Field(..., alias="from")
@@ -21,7 +49,9 @@ class Message(BaseModel):
     text: Optional[str] = None
     photo: Optional[list[PhotoSize]] = None
     caption: Optional[str] = None
+    caption_entities: Optional[List[MessageEntity]] = None
     bot: Optional[Bot] = None
+    entities: Optional[List[MessageEntity]] = None
 
     class Config:
         validate_by_name = True
@@ -38,6 +68,14 @@ class Message(BaseModel):
     def __str__(self) -> str:
         media_info = f", media={self.photo[0].file_id}" if self.photo else ""
         return f"Message(id={self.id}, text={self.context or 'None'}{media_info})"
+
+    def html_text(self) -> str:
+        from ..utils.html_parse import MessageParser
+
+        return MessageParser.parse_to_html(
+            text=self.context or "",
+            entities=self.entities or self.caption_entities,
+        )
 
     async def is_join(
         self,
