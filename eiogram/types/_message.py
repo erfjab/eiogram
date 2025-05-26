@@ -5,7 +5,6 @@ from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
 from ..client import Bot
-from ..utils.html_parse import MessageParser
 
 
 class EntityType(StrEnum):
@@ -71,8 +70,10 @@ class Message(BaseModel):
         return f"Message(id={self.id}, text={self.context or 'None'}{media_info})"
 
     def html_text(self) -> str:
+        from ..utils.html_parse import MessageParser
+
         return MessageParser.parse_to_html(
-            text=self.text or self.caption or "",
+            text=self.context or "",
             entities=self.entities or self.caption_entities,
         )
 
