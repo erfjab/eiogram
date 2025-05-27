@@ -9,7 +9,6 @@ class Command(_BaseTextFilter):
         self,
         command: str,
         *,
-        args_count: int = 0,
         prefix: str = "/",
         context: bool = False,
     ):
@@ -18,10 +17,9 @@ class Command(_BaseTextFilter):
         def check_func(text: str) -> bool:
             text = text.lower().strip()
             parts = text.split()
-            return len(parts) == args_count + 1 and parts[0] == f"{prefix}{cmd}"
+            return parts[0] == f"{prefix}{cmd}"
 
         super().__init__(check_func, context)
 
 
 StartCommand = partial(Command, command="start")
-VersionCommand = partial(Command, command="version")
