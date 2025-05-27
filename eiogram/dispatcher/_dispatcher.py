@@ -26,7 +26,10 @@ class Dispatcher:
         handler, middlewares = await self._find_handler(update=update)
         if not handler:
             if self.fallback.handler:
-                await self.fallback.handler(update)
+                kwargs = await self._build_handler_kwargs(
+                    self.fallback.handler, update, {}
+                )
+                await self.fallback.handler(**kwargs)
             return
 
         final_handler = await self._build_final_handler(handler.callback, update)
