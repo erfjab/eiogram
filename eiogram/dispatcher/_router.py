@@ -4,7 +4,6 @@ from functools import lru_cache
 from ._handlers import (
     MessageHandler,
     CallbackQueryHandler,
-    ErrorHandler,
     MiddlewareHandler,
     Handler,
 )
@@ -19,13 +18,11 @@ class Router:
         self.message = MessageHandler()
         self.callback_query = CallbackQueryHandler()
         self.middleware = MiddlewareHandler()
-        self.error = ErrorHandler()
 
     def include_router(self, router: "Router") -> None:
         self.message.handlers.extend(router.message.handlers)
         self.callback_query.handlers.extend(router.callback_query.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
-        self.error.handlers.extend(router.error.handlers)
 
     @lru_cache(maxsize=None)
     def _get_handlers(self, is_message: bool) -> Tuple[Handler]:
