@@ -7,7 +7,7 @@ from ..types import Update, Message, CallbackQuery
 from ..stats.storage import BaseStorage, MemoryStorage
 from ..stats import StatsManager
 from ..utils.callback_data import CallbackData
-from ._handlers import FallbackHandler
+from ._handlers import FallbackHandler, ErrorHandler
 
 U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 
@@ -18,29 +18,48 @@ class Dispatcher:
         self.routers: List[Router] = []
         self.storage = storage or MemoryStorage()
         self.fallback = FallbackHandler()
+        self.error = ErrorHandler()
 
     def include_router(self, router: "Router") -> None:
         self.routers.append(router)
 
     async def process(self, update: Update) -> None:
-        handler, middlewares = await self._find_handler(update=update)
-        if not handler:
-            if self.fallback.handler:
-                kwargs = await self._build_handler_kwargs(
-                    self.fallback.handler, update, {}
-                )
-                await self.fallback.handler(**kwargs)
-            return
+        try:
+            handler, middlewares = await self._find_handler(update=update)
+            if not handler:
+                if self.fallback.handler:
+                    kwargs = await self._build_handler_kwargs(
+                        self.fallback.handler, update, {}
+                    )
+                    await self.fallback.handler(**kwargs)
+                return
 
-        final_handler = await self._build_final_handler(handler.callback, update)
-        wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
+            final_handler = await self._build_final_handler(handler.callback, update)
+            wrapped_handler = self._wrap_middlewares(
+                middlewares.middlewares, final_handler
+            )
 
-        await wrapped_handler(update, {})
+            await wrapped_handler(update, {})
+
+        except Exception as e:
+            await self._handle_error(e, update)
+
+    async def _handle_error(self, error: Exception, update: Update) -> None:
+        for exception_type, handler in self.error.handlers:
+            if exception_type is not None and isinstance(error, exception_type):
+                await handler(error, update)
+                return
+
+        for exception_type, handler in self.error.handlers:
+            if exception_type is None:
+                await handler(error, update)
+                return
+
+        raise error
 
     def _wrap_middlewares(
         self, middlewares: List[Callable], final_handler: Callable
     ) -> Callable:
-        """Wrap middlewares in reverse order"""
         handler = final_handler
         for middleware in reversed(middlewares):
             handler = self._create_middleware_wrapper(middleware, handler)
@@ -49,16 +68,12 @@ class Dispatcher:
     def _create_middleware_wrapper(
         self, middleware: Callable, next_handler: Callable
     ) -> Callable:
-        """Create a middleware wrapper"""
-
         async def wrapper(update: Update, data: Dict[str, Any]) -> Any:
             return await middleware(next_handler, update, data)
 
         return wrapper
 
     async def _build_final_handler(self, handler: Callable, update: Update) -> Callable:
-        """Create the final handler that will be called after all middlewares"""
-
         async def final_handler(update: Update, data: Dict[str, Any]) -> Any:
             kwargs = await self._build_handler_kwargs(handler, update, data)
             return await handler(**kwargs)
@@ -78,7 +93,6 @@ class Dispatcher:
     async def _build_handler_kwargs(
         self, handler: Callable, update: Update, middleware_data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Build kwargs for the handler combining middleware data and update"""
         sig = inspect.signature(handler)
         kwargs = {}
         origin = update.origin

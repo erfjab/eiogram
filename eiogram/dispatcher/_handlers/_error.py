@@ -1,16 +1,17 @@
-from typing import Callable, Awaitable, List, Optional, Type, TypeVar
+from typing import Callable, Awaitable, List, Optional, Type, TypeVar, Any, Tuple, Union
 
 E = TypeVar("E", bound=Exception)
-ErrorHandlerFunc = Callable[[E], Awaitable[Optional[bool]]]
-
+ErrorHandlerFunc = Callable[[Any], Awaitable[None]]
 
 class ErrorHandler:
     def __init__(self):
-        self.handlers: List[tuple[Optional[Type[Exception]], ErrorHandlerFunc]] = []
+        self.handlers: List[Tuple[Tuple[Type[Exception], ...], ErrorHandlerFunc]] = []
 
-    def __call__(self, exception_type: Optional[Type[Exception]] = None):
+    def __call__(self, *exception_types: Type[Exception]):
         def decorator(func: ErrorHandlerFunc) -> ErrorHandlerFunc:
-            self.handlers.append((exception_type, func))
+            if not exception_types:
+                self.handlers.append(((), func))
+            else:
+                self.handlers.append((exception_types, func))
             return func
-
         return decorator
