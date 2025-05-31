@@ -1,7 +1,8 @@
-from typing import Callable, Awaitable, List, Optional, Type, TypeVar, Any, Tuple, Union
+from typing import Callable, Awaitable, List, Type, TypeVar, Any, Tuple
 
 E = TypeVar("E", bound=Exception)
 ErrorHandlerFunc = Callable[[Any], Awaitable[None]]
+
 
 class ErrorHandler:
     def __init__(self):
@@ -14,4 +15,5 @@ class ErrorHandler:
             else:
                 self.handlers.append((exception_types, func))
             return func
+
         return decorator
