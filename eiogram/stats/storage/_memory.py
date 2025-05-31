@@ -14,10 +14,6 @@ class MemoryStorage(BaseStorage):
             self._storage[key] = {}
         self._storage[key]["stats"] = stats
 
-    async def clear(self, key: Union[int, str]) -> None:
-        if key in self._storage:
-            del self._storage[key]
-
     async def upsert_data(self, key: Union[int, str], **data: Any) -> None:
         if key not in self._storage:
             self._storage[key] = {}
@@ -29,3 +25,15 @@ class MemoryStorage(BaseStorage):
         if key not in self._storage:
             return {}
         return self._storage[key].get("data", {})
+
+    async def clear_stats(self, key: Union[int, str]) -> None:
+        if key in self._storage and "stats" in self._storage[key]:
+            del self._storage[key]["stats"]
+
+    async def clear_data(self, key: Union[int, str]) -> None:
+        if key in self._storage and "data" in self._storage[key]:
+            del self._storage[key]["data"]
+
+    async def clear_all(self, key: Union[int, str]) -> None:
+        if key in self._storage:
+            del self._storage[key]
