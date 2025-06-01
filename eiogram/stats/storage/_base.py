@@ -12,7 +12,7 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    async def clear_state(self, key: Union[int, str]) -> None:
+    async def clear_stats(self, key: Union[int, str]) -> None:
         pass
 
     @abstractmethod
