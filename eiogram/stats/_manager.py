@@ -20,5 +20,11 @@ class StatsManager:
     async def get_data(self) -> Dict[str, Any]:
         return await self.storage.get_data(self.key)
 
-    async def clear(self) -> None:
-        await self.storage.clear(self.key)
+    async def clear_all(self) -> None:
+        await self.storage.clear_all(self.key)
+
+    async def clear_stats(self) -> None:
+        await self.storage.clear_stats(self.key)
+
+    async def clear_data(self) -> None:
+        await self.storage.clear_data(self.key)
