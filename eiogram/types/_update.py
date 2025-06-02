@@ -27,17 +27,23 @@ class Update(BaseModel):
             if "message" in values and values["message"] is not None:
                 if isinstance(values["message"], dict):
                     values["message"]["bot"] = bot
+                    values["message"]["from"]["bot"] = bot
                 elif isinstance(values["message"], Message):
                     values["message"].bot = bot
+                    values["message"]["from"].bot = bot
 
             # Handle callback_query
             if "callback_query" in values and values["callback_query"] is not None:
                 if isinstance(values["callback_query"], dict):
                     values["callback_query"]["bot"] = bot
                     values["callback_query"]["message"]["bot"] = bot
+                    values["callback_query"]["from"]["bot"] = bot
+                    values["callback_query"]["message"]["from"]["bot"] = bot
                 elif isinstance(values["callback_query"], CallbackQuery):
                     values["callback_query"].bot = bot
                     values["callback_query"]["message"].bot = bot
+                    values["callback_query"]["from"].bot = bot
+                    values["callback_query"]["message"]["from"].bot = bot
 
         return values
 
