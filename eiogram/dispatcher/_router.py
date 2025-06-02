@@ -57,7 +57,8 @@ class Router:
         if not handlers_tuple:
             return False
 
-        if stats:
+        start_filter = is_message and update.message.context == "/start"
+        if stats and is_message and not start_filter:
             filtered_handlers = self._get_stats_handlers(handlers_tuple)
         else:
             filtered_handlers = self._get_non_stats_handlers(handlers_tuple)
