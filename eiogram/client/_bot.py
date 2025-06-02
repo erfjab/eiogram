@@ -13,11 +13,51 @@ if TYPE_CHECKING:
 class Bot:
     def __init__(self, token: str):
         self.token = token
+        self._get_me = None
+
+    async def is_join(
+        self,
+        chat_id: Union[str, int],
+    ) -> bool:
+        from ..types._chat import ChatMemberStatus
+
+        try:
+            me = await self.get_me()
+            status = await self.get_chat_member(chat_id=chat_id, user_id=me.id)
+            if status and status in [
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.CREATOR,
+                ChatMemberStatus.MEMBER,
+                ChatMemberStatus.RESTRICTED,
+            ]:
+                return True
+        except Exception:
+            return False
+
+    async def is_admin(
+        self,
+        chat_id: Union[str, int],
+    ) -> bool:
+        from ..types._chat import ChatMemberStatus
+
+        try:
+            me = await self.get_me()
+            status = await self.get_chat_member(chat_id=chat_id, user_id=me.id)
+            if status and status in [
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.CREATOR,
+            ]:
+                return True
+        except Exception:
+            return False
 
     async def get_me(self) -> "User":
         from .methods._get_me import GetMe
 
-        return await GetMe(self.token).execute()
+        if not self._get_me:
+            me = await GetMe(self.token).execute()
+            self._get_me = me
+        return self._get_me
 
     async def set_webhook(
         self,

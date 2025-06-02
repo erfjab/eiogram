@@ -50,7 +50,7 @@ class User(BaseModel):
                 ChatMemberStatus.RESTRICTED,
             ]:
                 return True
-        finally:
+        except Exception:
             return False
 
     async def is_admin(
@@ -66,5 +66,5 @@ class User(BaseModel):
                 ChatMemberStatus.CREATOR,
             ]:
                 return True
-        finally:
+        except Exception:
             return False
