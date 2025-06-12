@@ -14,6 +14,7 @@ class SendPhoto(MethodBase):
         data = {
             "chat_id": chat_id,
             "photo": photo,
+            "parse_mode": "HTML",
         }
 
         if caption:

@@ -100,7 +100,7 @@ class CallbackDataFilter(Filter):
 
         for field_name, expected in self.conditions.items():
             actual = getattr(data, field_name)
-            
+
             if expected is ...:
                 if actual is None:
                     return False
