@@ -90,13 +90,15 @@ class Message(BaseModel):
 
     async def answer_photo(
         self,
-        chat_id: Union[int, str],
         photo: Union[str, bytes],
         caption: Optional[str] = None,
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
     ) -> "Message":
         return await self.bot.send_photo(
-            chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup
+            chat_id=self.chat.id,
+            photo=photo,
+            caption=caption,
+            reply_markup=reply_markup,
         )
 
     async def reply(
