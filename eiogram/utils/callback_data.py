@@ -98,16 +98,19 @@ class CallbackDataFilter(Filter):
         except ValueError:
             return False
 
-        for field_name, expected_value in self.conditions.items():
-            if field_name not in self.callback_data_class.model_fields:
-                return False
-
-            actual_value = getattr(data, field_name)
-
-            if callable(expected_value):
-                if not expected_value(actual_value):
+        for field_name, expected in self.conditions.items():
+            actual = getattr(data, field_name)
+            
+            if expected is ...:
+                if actual is None:
                     return False
-            elif actual_value != expected_value:
+            elif expected is None:
+                if actual is not None:
+                    return False
+            elif isinstance(expected, list):
+                if actual not in expected:
+                    return False
+            elif actual != expected:
                 return False
 
         return data
