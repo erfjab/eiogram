@@ -109,6 +109,7 @@ class Dispatcher:
             "bot": self.bot,
             "message": update.message,
             "callback_query": update.callback_query,
+            "inline_query": update.inline_query,
         }
 
         for name, value in common_params.items():

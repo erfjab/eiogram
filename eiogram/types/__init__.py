@@ -5,6 +5,13 @@ from ._update import Update
 from ._user import User
 from ._inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 from ._bot_command import BotCommand
+from ._inline_query import (
+    InlineQuery,
+    InlineQueryResultArticle,
+    InlineQueryResultPhoto,
+    AnswerInlineQuery,
+    InputTextMessageContent,
+)
 
 __all__ = [
     "Chat",
@@ -18,4 +25,9 @@ __all__ = [
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",
     "BotCommand",
+    "InlineQuery",
+    "InlineQueryResultArticle",
+    "InlineQueryResultPhoto",
+    "InputTextMessageContent",
+    "AnswerInlineQuery",
 ]

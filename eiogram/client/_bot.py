@@ -7,6 +7,7 @@ if TYPE_CHECKING:
         InlineKeyboardMarkup,
         BotCommand,
         ChatMemberStatus,
+        AnswerInlineQuery,
     )
 
 
@@ -63,7 +64,11 @@ class Bot:
         self,
         url: str,
         max_connections: int = 40,
-        allowed_updates: Optional[List[str]] = None,
+        allowed_updates: Optional[List[str]] = [
+            "message",
+            "callback_query",
+            "inline_query",
+        ],
         drop_pending_updates: bool = False,
         secret_token: Optional[str] = None,
     ) -> bool:
@@ -199,3 +204,8 @@ class Bot:
         return await AnswerCallbackQuery(self.token).execute(
             callback_query_id=callback_query_id, text=text, show_alert=show_alert
         )
+
+    async def answer_inline_query(self, answer: "AnswerInlineQuery") -> bool:
+        from .methods._answer_inline_query import AnswerInlineQueryMethod
+
+        return await AnswerInlineQueryMethod(self.token).execute(answer=answer)
