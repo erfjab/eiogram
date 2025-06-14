@@ -5,6 +5,7 @@ from ._handlers import (
     MessageHandler,
     CallbackQueryHandler,
     MiddlewareHandler,
+    InlineQueryHandler,
     Handler,
 )
 from ..types import Update
@@ -17,17 +18,26 @@ class Router:
         self.name = name or f"router_{id(self)}"
         self.message = MessageHandler()
         self.callback_query = CallbackQueryHandler()
+        self.inline_query = InlineQueryHandler()
         self.middleware = MiddlewareHandler()
 
     def include_router(self, router: "Router") -> None:
         self.message.handlers.extend(router.message.handlers)
         self.callback_query.handlers.extend(router.callback_query.handlers)
+        self.inline_query.handlers.extend(router.inline_query.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
 
     @lru_cache(maxsize=None)
-    def _get_handlers(self, is_message: bool) -> Tuple[Handler]:
+    def _get_handlers(self, update_type: str) -> Tuple[Handler]:
         """Get handlers with caching based on update type"""
-        handlers = self.message.handlers if is_message else self.callback_query.handlers
+        if update_type == "message":
+            handlers = self.message.handlers
+        elif update_type == "callback_query":
+            handlers = self.callback_query.handlers
+        elif update_type == "inline_query":
+            handlers = self.inline_query.handlers
+        else:
+            handlers = []
         return tuple(handlers)
 
     @lru_cache(maxsize=None)
@@ -51,14 +61,22 @@ class Router:
     async def matches_update(
         self, update: Update, stats: Optional[State] = None
     ) -> Union[bool, Handler]:
-        is_message = update.message is not None
-        handlers_tuple = self._get_handlers(is_message)
+        if update.message is not None:
+            update_type = "message"
+        elif update.callback_query is not None:
+            update_type = "callback_query"
+        elif update.inline_query is not None:
+            update_type = "inline_query"
+        else:
+            return False
+
+        handlers_tuple = self._get_handlers(update_type)
 
         if not handlers_tuple:
             return False
 
-        start_filter = is_message and update.message.context == "/start"
-        if stats and is_message and not start_filter:
+        start_filter = update.message and update.message.context == "/start"
+        if stats and update.message and not start_filter:
             filtered_handlers = self._get_stats_handlers(handlers_tuple)
         else:
             filtered_handlers = self._get_non_stats_handlers(handlers_tuple)

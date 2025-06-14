@@ -2,6 +2,7 @@ from typing import Optional, Any, Union
 from pydantic import BaseModel, root_validator
 from ._message import Message
 from ._callback_query import CallbackQuery
+from ._inline_query import InlineQuery
 from ..client import Bot
 
 
@@ -9,6 +10,7 @@ class Update(BaseModel):
     update_id: int
     message: Optional[Message] = None
     callback_query: Optional[CallbackQuery] = None
+    inline_query: Optional[InlineQuery] = None
     data: dict[str, Any] = {}
     bot: Optional[Bot] = None
 
@@ -16,8 +18,14 @@ class Update(BaseModel):
         arbitrary_types_allowed = True
 
     @property
-    def origin(self) -> Optional[Union[Message, CallbackQuery]]:
-        return self.message or self.callback_query
+    def origin(self) -> Optional[Union[Message, CallbackQuery, InlineQuery]]:
+        if self.message:
+            return self.message
+        if self.callback_query:
+            return self.callback_query
+        if self.inline_query:
+            return self.inline_query
+        return
 
     @root_validator(pre=True)
     def inject_bot_to_submodels(cls, values):
