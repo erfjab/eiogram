@@ -157,6 +157,22 @@ class Bot:
             chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup
         )
 
+    async def edit_message_caption(
+        self,
+        chat_id: Union[int, str],
+        message_id: int,
+        caption: Optional[str],
+        reply_markup: Optional["InlineKeyboardMarkup"] = None,
+    ) -> "Message":
+        from .methods._edit_message_caption import EditMessageCaption
+
+        return await EditMessageCaption(self.token).execute(
+            chat_id=chat_id,
+            message_id=message_id,
+            caption=caption,
+            reply_markup=reply_markup,
+        )
+
     async def send_photo(
         self,
         chat_id: Union[int, str],

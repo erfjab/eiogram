@@ -11,6 +11,7 @@ from ._set_webhook import SetWebhook
 from ._pin_message import PinMessage
 from ._get_chat_member import GetChatMember
 from ._answer_inline_query import AnswerInlineQueryMethod
+from ._edit_message_caption import EditMessageCaption
 
 __all__ = [
     "AnswerCallbackQuery",
@@ -26,4 +27,5 @@ __all__ = [
     "PinMessage",
     "GetChatMember",
     "AnswerInlineQueryMethod",
+    "EditMessageCaption",
 ]
