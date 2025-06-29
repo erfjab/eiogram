@@ -3,7 +3,7 @@ from eiogram.types import Message, InlineKeyboardMarkup
 from ._base import MethodBase
 
 
-class EditPhotoMessage(MethodBase):
+class EditMessageCaption(MethodBase):
     async def execute(
         self,
         caption: str,
@@ -25,5 +25,5 @@ class EditPhotoMessage(MethodBase):
         else:
             data.update({"chat_id": chat_id, "message_id": message_id})
 
-        response = await self._make_request("POST", "editMessageText", data)
+        response = await self._make_request("POST", "editMessageCaption", data)
         return Message(**response["result"])

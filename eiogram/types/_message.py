@@ -119,7 +119,7 @@ class Message(BaseModel):
         reply_markup: Optional["InlineKeyboardMarkup"] = None,
     ) -> "Message":
         if self.photo:
-            return await self.bot.edit_photo_message(
+            return await self.bot.edit_message_caption(
                 chat_id=self.chat.id,
                 message_id=self.message_id,
                 caption=text,
