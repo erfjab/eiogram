@@ -51,7 +51,7 @@ class InlineKeyboardBuilder:
                 self._keyboard.append(buttons)
         return self
 
-    def adjust(self, *sizes: Union[int, Tuple[int, ...]]) -> "InlineKeyboardBuilder":
+    def adjust(self, *sizes: int) -> "InlineKeyboardBuilder":
         buttons = [btn for row in self._keyboard for btn in row]
         self._keyboard = []
 
@@ -60,19 +60,21 @@ class InlineKeyboardBuilder:
                 self._keyboard = [buttons]
             return self
 
+        last_size = sizes[-1]
         for size in sizes:
-            if isinstance(size, int):
-                if size > 0 and buttons:
-                    self._keyboard.append(buttons[:size])
-                    buttons = buttons[size:]
-            else:
-                for s in size:
-                    if s > 0 and buttons:
-                        self._keyboard.append(buttons[:s])
-                        buttons = buttons[s:]
+            if size <= 0:
+                continue
+            if buttons:
+                self._keyboard.append(buttons[:size])
+                buttons = buttons[size:]
 
-        if buttons:
-            self._keyboard.append(buttons)
+        while buttons:
+            chunk_size = min(last_size, len(buttons))
+            if chunk_size <= 0:
+                break
+            self._keyboard.append(buttons[:chunk_size])
+            buttons = buttons[chunk_size:]
+
         return self
 
     def as_markup(self) -> InlineKeyboardMarkup:
