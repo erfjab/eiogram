@@ -3,7 +3,7 @@ from typing import Optional, TypeVar, Union, List, Tuple, Callable, Dict, Any
 from ._handlers import Handler, MiddlewareHandler
 from ._router import Router
 from ..client import Bot
-from ..types import Update, Message, CallbackQuery
+from ..types import Update, Message, CallbackQuery, InlineQuery
 from ..stats.storage import BaseStorage, MemoryStorage
 from ..stats import StatsManager
 from ..utils.callback_data import CallbackData
@@ -96,41 +96,41 @@ class Dispatcher:
         sig = inspect.signature(handler)
         kwargs = {}
         origin = update.origin
-
         for name, value in middleware_data.items():
             if name in sig.parameters:
                 kwargs[name] = value
-
-        common_params = {
-            "update": update,
-            "stats": StatsManager(
+        type_mapping = {
+            Update: update,
+            StatsManager: StatsManager(
                 key=int(origin.from_user.chatid), storage=self.storage
             ),
-            "bot": self.bot,
-            "message": update.message,
-            "callback_query": update.callback_query,
-            "inline_query": update.inline_query,
+            Bot: self.bot,
+            Message: update.message,
+            CallbackQuery: update.callback_query,
+            InlineQuery: update.inline_query,
         }
 
-        for name, value in common_params.items():
-            if name in sig.parameters and value is not None:
-                kwargs[name] = value
+        for param_name, param in sig.parameters.items():
+            if param_name in kwargs:
+                continue
 
-        if (
-            update.callback_query
-            and "callback_data" in sig.parameters
-            and inspect.isclass(sig.parameters["callback_data"].annotation)
-            and issubclass(sig.parameters["callback_data"].annotation, CallbackData)
-        ):
-            kwargs["callback_data"] = sig.parameters["callback_data"].annotation.unpack(
-                update.callback_query.data
-            )
+            param_type = param.annotation
 
-        for param in sig.parameters:
-            if param not in kwargs:
-                if hasattr(update, param):
-                    kwargs[param] = getattr(update, param)
-                elif param in update.data:
-                    kwargs[param] = update.data[param]
+            if param_type in type_mapping:
+                value = type_mapping[param_type]
+                if value is not None:
+                    kwargs[param_name] = value
+
+            elif (
+                update.callback_query
+                and inspect.isclass(param_type)
+                and issubclass(param_type, CallbackData)
+            ):
+                kwargs[param_name] = param_type.unpack(update.callback_query.data)
+
+            elif hasattr(update, param_name):
+                kwargs[param_name] = getattr(update, param_name)
+            elif hasattr(update, "data") and param_name in update.data:
+                kwargs[param_name] = update.data[param_name]
 
         return kwargs
