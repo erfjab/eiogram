@@ -6,14 +6,10 @@ class MemoryStorage(BaseStorage):
     def __init__(self):
         self._storage: Dict[Union[int, str], Dict[str, Any]] = {}
 
-    async def get_stats(
-        self, key: Union[int, str], **kwargs: Any
-    ) -> Optional[Dict[str, Any]]:
+    async def get_stats(self, key: Union[int, str], **kwargs: Any) -> Optional[Dict[str, Any]]:
         return self._storage.get(key, {}).get("stats")
 
-    async def set_stats(
-        self, key: Union[int, str], stats: Dict[str, Any], **kwargs: Any
-    ) -> None:
+    async def set_stats(self, key: Union[int, str], stats: Dict[str, Any], **kwargs: Any) -> None:
         if key not in self._storage:
             self._storage[key] = {}
         self._storage[key]["stats"] = stats

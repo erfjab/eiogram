@@ -16,9 +16,7 @@ class User(BaseModel):
 
     @property
     def full_name(self) -> str:
-        return (
-            f"{self.first_name} {self.last_name}" if self.last_name else self.first_name
-        )
+        return f"{self.first_name} {self.last_name}" if self.last_name else self.first_name
 
     @property
     def chatid(self) -> int:
@@ -29,11 +27,7 @@ class User(BaseModel):
         return f"@{self.username}" if self.username else None
 
     def __str__(self) -> str:
-        return (
-            f"User(id={self.id}, "
-            f"name={self.full_name}, "
-            f"username={self.username or 'N/A'})"
-        )
+        return f"User(id={self.id}, name={self.full_name}, username={self.username or 'N/A'})"
 
     async def is_join(
         self,

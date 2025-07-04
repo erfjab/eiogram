@@ -12,9 +12,7 @@ class InlineQueryHandler(BaseHandler):
     def __init__(self):
         super().__init__(update_type="inline_query")
 
-    def __call__(
-        self, *filters: FilterFunc, priority: int = 0
-    ) -> Callable[[InlineQueryHandlerFunc], InlineQueryHandlerFunc]:
+    def __call__(self, *filters: FilterFunc, priority: int = 0) -> Callable[[InlineQueryHandlerFunc], InlineQueryHandlerFunc]:
         def decorator(func: InlineQueryHandlerFunc) -> InlineQueryHandlerFunc:
             return self.register(func, list(filters), priority)
 

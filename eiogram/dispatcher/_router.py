@@ -45,9 +45,7 @@ class Router:
         return tuple()
 
     @lru_cache(maxsize=128)
-    def _categorize_handlers(
-        self, handlers: Tuple[Handler]
-    ) -> Dict[HandlerPriority, List[Handler]]:
+    def _categorize_handlers(self, handlers: Tuple[Handler]) -> Dict[HandlerPriority, List[Handler]]:
         categorized = {
             HandlerPriority.STATS_IGNORE: [],
             HandlerPriority.STATS_REQUIRED: [],
@@ -69,9 +67,7 @@ class Router:
             return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_REQUIRED]
         return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_INDEPENDENT]
 
-    async def matches_update(
-        self, update: Update, stats: Optional[State] = None
-    ) -> Union[bool, Handler]:
+    async def matches_update(self, update: Update, stats: Optional[State] = None) -> Union[bool, Handler]:
         handlers = self._get_handlers(update)
         if not handlers:
             return False
@@ -101,9 +97,7 @@ class Router:
                 continue
 
             result = (
-                await filter_func(update.origin)
-                if inspect.iscoroutinefunction(filter_func)
-                else filter_func(update.origin)
+                await filter_func(update.origin) if inspect.iscoroutinefunction(filter_func) else filter_func(update.origin)
             )
             if not result:
                 return False

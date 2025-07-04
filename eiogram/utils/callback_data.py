@@ -10,9 +10,7 @@ class CallbackData(BaseModel):
     _prefix: ClassVar[str] = ""
     _sep: ClassVar[str] = ":"
 
-    model_config = ConfigDict(
-        extra="forbid", validate_assignment=True, ignored_types=(type(ClassVar),)
-    )
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, ignored_types=(type(ClassVar),))
 
     def __init_subclass__(cls, prefix: str, sep: str = ":", **kwargs):
         cls._prefix = prefix

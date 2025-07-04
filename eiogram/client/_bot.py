@@ -182,9 +182,7 @@ class Bot:
     ) -> "Message":
         from .methods._send_photo import SendPhoto
 
-        return await SendPhoto(self.token).execute(
-            chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup
-        )
+        return await SendPhoto(self.token).execute(chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup)
 
     async def pin_message(
         self,
@@ -200,14 +198,10 @@ class Bot:
             disable_notification=disable_notification,
         )
 
-    async def delete_messages(
-        self, chat_id: Union[int, str], message_ids: List[int]
-    ) -> List[bool]:
+    async def delete_messages(self, chat_id: Union[int, str], message_ids: List[int]) -> List[bool]:
         from .methods._delete_messages import DeleteMessages
 
-        return await DeleteMessages(self.token).execute(
-            chat_id=chat_id, message_ids=message_ids
-        )
+        return await DeleteMessages(self.token).execute(chat_id=chat_id, message_ids=message_ids)
 
     async def answer_callback(
         self,

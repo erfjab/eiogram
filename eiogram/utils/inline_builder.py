@@ -30,9 +30,7 @@ class InlineKeyboardBuilder:
         self._keyboard[-1].append(button)
         return self
 
-    def row(
-        self, *buttons: InlineKeyboardButton, size: Union[int, Tuple[int, ...]] = None
-    ) -> "InlineKeyboardBuilder":
+    def row(self, *buttons: InlineKeyboardButton, size: Union[int, Tuple[int, ...]] = None) -> "InlineKeyboardBuilder":
         if not buttons:
             return self
 

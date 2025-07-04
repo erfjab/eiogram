@@ -5,13 +5,7 @@ class _ChatTypeFilter(Filter):
     """Base class for chat type filters"""
 
     def __init__(self, chat_type: str):
-        super().__init__(
-            lambda msg: (
-                hasattr(msg, "chat")
-                and hasattr(msg.chat, "type")
-                and msg.chat.type == chat_type
-            )
-        )
+        super().__init__(lambda msg: (hasattr(msg, "chat") and hasattr(msg.chat, "type") and msg.chat.type == chat_type))
 
 
 class IsPrivate(_ChatTypeFilter):

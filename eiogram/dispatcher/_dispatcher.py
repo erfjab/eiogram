@@ -28,16 +28,12 @@ class Dispatcher:
             handler, middlewares = await self._find_handler(update=update)
             if not handler:
                 if self.fallback.handler:
-                    kwargs = await self._build_handler_kwargs(
-                        self.fallback.handler, update, {}
-                    )
+                    kwargs = await self._build_handler_kwargs(self.fallback.handler, update, {})
                     await self.fallback.handler(**kwargs)
                 return
 
             final_handler = await self._build_final_handler(handler.callback, update)
-            wrapped_handler = self._wrap_middlewares(
-                middlewares.middlewares, final_handler
-            )
+            wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
 
             await wrapped_handler(update, {})
 
@@ -57,17 +53,13 @@ class Dispatcher:
 
         raise error
 
-    def _wrap_middlewares(
-        self, middlewares: List[Callable], final_handler: Callable
-    ) -> Callable:
+    def _wrap_middlewares(self, middlewares: List[Callable], final_handler: Callable) -> Callable:
         handler = final_handler
         for middleware in reversed(middlewares):
             handler = self._create_middleware_wrapper(middleware, handler)
         return handler
 
-    def _create_middleware_wrapper(
-        self, middleware: Callable, next_handler: Callable
-    ) -> Callable:
+    def _create_middleware_wrapper(self, middleware: Callable, next_handler: Callable) -> Callable:
         async def wrapper(update: Update, data: Dict[str, Any]) -> Any:
             return await middleware(next_handler, update, data)
 
@@ -80,9 +72,7 @@ class Dispatcher:
 
         return final_handler
 
-    async def _find_handler(
-        self, update: Update
-    ) -> Optional[Tuple[Handler, MiddlewareHandler]]:
+    async def _find_handler(self, update: Update) -> Optional[Tuple[Handler, MiddlewareHandler]]:
         stats = await self.storage.get_stats(update.origin.from_user.chatid)
         for router in self.routers:
             handler = await router.matches_update(update=update, stats=stats)
@@ -90,9 +80,7 @@ class Dispatcher:
                 return handler, router.middleware
         return None, None
 
-    async def _build_handler_kwargs(
-        self, handler: Callable, update: Update, middleware_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def _build_handler_kwargs(self, handler: Callable, update: Update, middleware_data: Dict[str, Any]) -> Dict[str, Any]:
         sig = inspect.signature(handler)
         kwargs = {}
         origin = update.origin
@@ -101,9 +89,7 @@ class Dispatcher:
                 kwargs[name] = value
         type_mapping = {
             Update: update,
-            StatsManager: StatsManager(
-                key=int(origin.from_user.chatid), storage=self.storage
-            ),
+            StatsManager: StatsManager(key=int(origin.from_user.chatid), storage=self.storage),
             Bot: self.bot,
             Message: update.message,
             CallbackQuery: update.callback_query,
@@ -121,11 +107,7 @@ class Dispatcher:
                 if value is not None:
                     kwargs[param_name] = value
 
-            elif (
-                update.callback_query
-                and inspect.isclass(param_type)
-                and issubclass(param_type, CallbackData)
-            ):
+            elif update.callback_query and inspect.isclass(param_type) and issubclass(param_type, CallbackData):
                 kwargs[param_name] = param_type.unpack(update.callback_query.data)
 
             elif hasattr(update, param_name):
