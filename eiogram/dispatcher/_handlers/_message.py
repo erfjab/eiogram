@@ -11,7 +11,5 @@ class MessageHandler(BaseHandler):
     def __init__(self):
         super().__init__(update_type="message")
 
-    def __call__(
-        self, *filters: FilterFunc, priority: int = 0
-    ) -> Callable[[MessageHandlerFunc], MessageHandlerFunc]:
+    def __call__(self, *filters: FilterFunc, priority: int = 0) -> Callable[[MessageHandlerFunc], MessageHandlerFunc]:
         return super().__call__(*filters, priority=priority)

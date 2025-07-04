@@ -26,8 +26,4 @@ class InlineKeyboardMarkup(BaseModel):
     inline_keyboard: List[List[InlineKeyboardButton]]
 
     def dict(self) -> dict:
-        return {
-            "inline_keyboard": [
-                [button.dict() for button in row] for row in self.inline_keyboard
-            ]
-        }
+        return {"inline_keyboard": [[button.dict() for button in row] for row in self.inline_keyboard]}

@@ -7,9 +7,7 @@ if TYPE_CHECKING:
 
 class MessageParser:
     @staticmethod
-    def parse_to_html(
-        text: str, entities: Optional[List["MessageEntity"]] = None
-    ) -> str:
+    def parse_to_html(text: str, entities: Optional[List["MessageEntity"]] = None) -> str:
         if not text:
             return ""
         if not entities:
@@ -20,11 +18,7 @@ class MessageParser:
         last_pos = 0
 
         for entity in entities:
-            if (
-                entity.offset < 0
-                or entity.length <= 0
-                or entity.offset + entity.length > len(text)
-            ):
+            if entity.offset < 0 or entity.length <= 0 or entity.offset + entity.length > len(text):
                 continue
 
             if entity.offset > last_pos:

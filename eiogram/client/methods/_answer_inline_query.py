@@ -9,13 +9,8 @@ class AnswerInlineQueryMethod(MethodBase):
         for result in answer.results:
             result_dict = result.dict(by_alias=True, exclude_none=True)
 
-            if (
-                hasattr(result, "input_message_content")
-                and result.input_message_content
-            ):
-                result_dict["input_message_content"] = (
-                    result.input_message_content.dict(exclude_none=True)
-                )
+            if hasattr(result, "input_message_content") and result.input_message_content:
+                result_dict["input_message_content"] = result.input_message_content.dict(exclude_none=True)
 
             serialized_results.append(result_dict)
 

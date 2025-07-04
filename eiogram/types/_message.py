@@ -134,9 +134,7 @@ class Message(BaseModel):
         )
 
     async def delete(self) -> bool:
-        return await self.bot.delete_messages(
-            chat_id=self.chat.id, message_ids=[self.message_id]
-        )
+        return await self.bot.delete_messages(chat_id=self.chat.id, message_ids=[self.message_id])
 
     async def pin(self, disable_notification: bool = False) -> bool:
         return await self.bot.pin_message(
