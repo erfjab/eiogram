@@ -5,7 +5,7 @@ from ._data import Data
 from ._photo import Photo
 from ._regax import Regex
 from ._text import Text
-from ._stats import StatsFilter
+from ._stats import StatsFilter, IgnoreStatsFilter
 
 __all__ = [
     "BaseTextFilter",
@@ -22,4 +22,5 @@ __all__ = [
     "Regex",
     "Text",
     "StatsFilter",
+    "IgnoreStatsFilter",
 ]

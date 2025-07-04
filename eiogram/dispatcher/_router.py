@@ -1,6 +1,7 @@
 import inspect
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List, Dict
 from functools import lru_cache
+from enum import Enum, auto
 from ._handlers import (
     MessageHandler,
     CallbackQueryHandler,
@@ -9,8 +10,14 @@ from ._handlers import (
     Handler,
 )
 from ..types import Update
-from ..filters import StatsFilter
+from ..filters import StatsFilter, IgnoreStatsFilter
 from ..stats import State
+
+
+class HandlerPriority(Enum):
+    STATS_IGNORE = auto()
+    STATS_REQUIRED = auto()
+    STATS_INDEPENDENT = auto()
 
 
 class Router:
@@ -27,81 +34,78 @@ class Router:
         self.inline_query.handlers.extend(router.inline_query.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
 
-    @lru_cache(maxsize=None)
-    def _get_handlers(self, update_type: str) -> Tuple[Handler]:
-        """Get handlers with caching based on update type"""
-        if update_type == "message":
-            handlers = self.message.handlers
-        elif update_type == "callback_query":
-            handlers = self.callback_query.handlers
-        elif update_type == "inline_query":
-            handlers = self.inline_query.handlers
-        else:
-            handlers = []
-        return tuple(handlers)
+    @lru_cache(maxsize=128)
+    def _get_handlers(self, update: Update) -> Tuple[Handler]:
+        if update.callback_query:
+            return tuple(self.callback_query.handlers)
+        if update.message:
+            return tuple(self.message.handlers)
+        if update.inline_query:
+            return tuple(self.inline_query.handlers)
+        return tuple()
 
-    @lru_cache(maxsize=None)
-    def _get_non_stats_handlers(self, handlers_tuple: Tuple[Handler]) -> Tuple[Handler]:
-        """Get handlers without StatsFilter with caching"""
-        return tuple(
-            handler
-            for handler in handlers_tuple
-            if not any(isinstance(f, StatsFilter) for f in handler.filters)
-        )
+    @lru_cache(maxsize=128)
+    def _categorize_handlers(
+        self, handlers: Tuple[Handler]
+    ) -> Dict[HandlerPriority, List[Handler]]:
+        categorized = {
+            HandlerPriority.STATS_IGNORE: [],
+            HandlerPriority.STATS_REQUIRED: [],
+            HandlerPriority.STATS_INDEPENDENT: [],
+        }
 
-    @lru_cache(maxsize=None)
-    def _get_stats_handlers(self, handlers_tuple: Tuple[Handler]) -> Tuple[Handler]:
-        """Get handlers with StatsFilter with caching"""
-        return tuple(
-            handler
-            for handler in handlers_tuple
-            if any(isinstance(f, StatsFilter) for f in handler.filters)
-        )
+        for handler in handlers:
+            if any(isinstance(f, IgnoreStatsFilter) for f in handler.filters):
+                categorized[HandlerPriority.STATS_IGNORE].append(handler)
+            elif any(isinstance(f, StatsFilter) for f in handler.filters):
+                categorized[HandlerPriority.STATS_REQUIRED].append(handler)
+            else:
+                categorized[HandlerPriority.STATS_INDEPENDENT].append(handler)
+
+        return categorized
+
+    def _get_relevant_priorities(stats: Optional[State]) -> List[HandlerPriority]:
+        if stats is not None:
+            return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_REQUIRED]
+        return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_INDEPENDENT]
 
     async def matches_update(
         self, update: Update, stats: Optional[State] = None
     ) -> Union[bool, Handler]:
-        if update.message is not None:
-            update_type = "message"
-        elif update.callback_query is not None:
-            update_type = "callback_query"
-        elif update.inline_query is not None:
-            update_type = "inline_query"
-        else:
+        handlers = self._get_handlers(update)
+        if not handlers:
             return False
 
-        handlers_tuple = self._get_handlers(update_type)
+        categorized = self._categorize_handlers(handlers)
 
-        if not handlers_tuple:
-            return False
-
-        start_filter = update.message and update.message.context == "/start"
-        if stats and update.message and not start_filter:
-            filtered_handlers = self._get_stats_handlers(handlers_tuple)
-        else:
-            filtered_handlers = self._get_non_stats_handlers(handlers_tuple)
-
-        if not filtered_handlers:
-            return False
-
-        for handler in filtered_handlers:
-            if not handler.filters:
-                return handler
-
-            filter_passed = True
-            for filter_func in handler.filters:
-                if isinstance(filter_func, StatsFilter):
-                    result = filter_func(stats)
-                elif inspect.iscoroutinefunction(filter_func):
-                    result = await filter_func(update.origin)
-                else:
-                    result = filter_func(update.origin)
-
-                if not result:
-                    filter_passed = False
-                    break
-
-            if filter_passed:
-                return handler
+        for priority in self._get_relevant_priorities(stats):
+            for handler in categorized.get(priority, []):
+                if await self._check_handler(handler, update, stats):
+                    return handler
 
         return False
+
+    async def _check_handler(
+        self,
+        handler: Handler,
+        update: Update,
+        stats: Optional[State],
+    ) -> bool:
+        for filter_func in handler.filters:
+            if isinstance(filter_func, IgnoreStatsFilter):
+                continue
+
+            if isinstance(filter_func, StatsFilter):
+                if not filter_func(stats):
+                    return False
+                continue
+
+            result = (
+                await filter_func(update.origin)
+                if inspect.iscoroutinefunction(filter_func)
+                else filter_func(update.origin)
+            )
+            if not result:
+                return False
+
+        return True
