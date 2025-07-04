@@ -34,7 +34,6 @@ class Router:
         self.inline_query.handlers.extend(router.inline_query.handlers)
         self.middleware.middlewares.extend(router.middleware.middlewares)
 
-    @lru_cache(maxsize=128)
     def _get_handlers(self, update: Update) -> Tuple[Handler]:
         if update.callback_query:
             return tuple(self.callback_query.handlers)
@@ -62,6 +61,7 @@ class Router:
 
         return categorized
 
+    @staticmethod
     def _get_relevant_priorities(stats: Optional[State]) -> List[HandlerPriority]:
         if stats is not None:
             return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_REQUIRED]
