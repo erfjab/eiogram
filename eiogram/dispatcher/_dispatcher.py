@@ -4,8 +4,8 @@ from ._handlers import Handler, MiddlewareHandler
 from ._router import Router
 from ..client import Bot
 from ..types import Update, Message, CallbackQuery, InlineQuery
-from ..stats.storage import BaseStorage, MemoryStorage
-from ..stats import StatsManager
+from ..state.storage import BaseStorage, MemoryStorage
+from ..state import StateManager
 from ..utils.callback_data import CallbackData
 from ._handlers import FallbackHandler, ErrorHandler
 
@@ -73,9 +73,9 @@ class Dispatcher:
         return final_handler
 
     async def _find_handler(self, update: Update) -> Optional[Tuple[Handler, MiddlewareHandler]]:
-        stats = await self.storage.get_stats(update.origin.from_user.chatid)
+        state = await self.storage.get_state(update.origin.from_user.chatid)
         for router in self.routers:
-            handler = await router.matches_update(update=update, stats=stats)
+            handler = await router.matches_update(update=update, state=state)
             if handler:
                 return handler, router.middleware
         return None, None
@@ -89,7 +89,7 @@ class Dispatcher:
                 kwargs[name] = value
         type_mapping = {
             Update: update,
-            StatsManager: StatsManager(key=int(origin.from_user.chatid), storage=self.storage),
+            StateManager: StateManager(key=int(origin.from_user.chatid), storage=self.storage),
             Bot: self.bot,
             Message: update.message,
             CallbackQuery: update.callback_query,

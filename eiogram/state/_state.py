@@ -13,7 +13,7 @@ class State:
         return False
 
 
-class StatsGroupMeta(type):
+class StateGroupMeta(type):
     def __new__(mcls, name, bases, namespace):
         cls = super().__new__(mcls, name, bases, namespace)
         cls._states = {}
@@ -27,7 +27,7 @@ class StatsGroupMeta(type):
         return cls
 
 
-class StatsGroup(metaclass=StatsGroupMeta):
+class StateGroup(metaclass=StateGroupMeta):
     @classmethod
     def get_states(cls) -> Dict[str, State]:
         return cls._states.copy()
