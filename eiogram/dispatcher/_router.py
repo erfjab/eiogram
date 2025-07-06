@@ -10,14 +10,14 @@ from ._handlers import (
     Handler,
 )
 from ..types import Update
-from ..filters import StatsFilter, IgnoreStatsFilter
-from ..stats import State
+from ..filters import StateFilter, IgnoreStateFilter
+from ..state import State
 
 
 class HandlerPriority(Enum):
-    STATS_IGNORE = auto()
-    STATS_REQUIRED = auto()
-    STATS_INDEPENDENT = auto()
+    STATE_IGNORE = auto()
+    STATE_REQUIRED = auto()
+    STATE_INDEPENDENT = auto()
 
 
 class Router:
@@ -46,37 +46,37 @@ class Router:
     @lru_cache(maxsize=128)
     def _categorize_handlers(self, handlers: Tuple[Handler]) -> Dict[HandlerPriority, List[Handler]]:
         categorized = {
-            HandlerPriority.STATS_IGNORE: [],
-            HandlerPriority.STATS_REQUIRED: [],
-            HandlerPriority.STATS_INDEPENDENT: [],
+            HandlerPriority.STATE_IGNORE: [],
+            HandlerPriority.STATE_REQUIRED: [],
+            HandlerPriority.STATE_INDEPENDENT: [],
         }
 
         for handler in handlers:
-            if any(isinstance(f, IgnoreStatsFilter) for f in handler.filters):
-                categorized[HandlerPriority.STATS_IGNORE].append(handler)
-            elif any(isinstance(f, StatsFilter) for f in handler.filters):
-                categorized[HandlerPriority.STATS_REQUIRED].append(handler)
+            if any(isinstance(f, IgnoreStateFilter) for f in handler.filters):
+                categorized[HandlerPriority.STATE_IGNORE].append(handler)
+            elif any(isinstance(f, StateFilter) for f in handler.filters):
+                categorized[HandlerPriority.STATE_REQUIRED].append(handler)
             else:
-                categorized[HandlerPriority.STATS_INDEPENDENT].append(handler)
+                categorized[HandlerPriority.STATE_INDEPENDENT].append(handler)
 
         return categorized
 
     @staticmethod
-    def _get_relevant_priorities(stats: Optional[State]) -> List[HandlerPriority]:
-        if stats is not None:
-            return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_REQUIRED]
-        return [HandlerPriority.STATS_IGNORE, HandlerPriority.STATS_INDEPENDENT]
+    def _get_relevant_priorities(state: Optional[State]) -> List[HandlerPriority]:
+        if state is not None:
+            return [HandlerPriority.STATE_IGNORE, HandlerPriority.STATE_REQUIRED]
+        return [HandlerPriority.STATE_IGNORE, HandlerPriority.STATE_INDEPENDENT]
 
-    async def matches_update(self, update: Update, stats: Optional[State] = None) -> Union[bool, Handler]:
+    async def matches_update(self, update: Update, state: Optional[State] = None) -> Union[bool, Handler]:
         handlers = self._get_handlers(update)
         if not handlers:
             return False
 
         categorized = self._categorize_handlers(handlers)
 
-        for priority in self._get_relevant_priorities(stats):
+        for priority in self._get_relevant_priorities(state):
             for handler in categorized.get(priority, []):
-                if await self._check_handler(handler, update, stats):
+                if await self._check_handler(handler, update, state):
                     return handler
 
         return False
@@ -85,14 +85,14 @@ class Router:
         self,
         handler: Handler,
         update: Update,
-        stats: Optional[State],
+        state: Optional[State],
     ) -> bool:
         for filter_func in handler.filters:
-            if isinstance(filter_func, IgnoreStatsFilter):
+            if isinstance(filter_func, IgnoreStateFilter):
                 continue
 
-            if isinstance(filter_func, StatsFilter):
-                if not filter_func(stats):
+            if isinstance(filter_func, StateFilter):
+                if not filter_func(state):
                     return False
                 continue
 

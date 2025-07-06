@@ -6,13 +6,13 @@ class MemoryStorage(BaseStorage):
     def __init__(self):
         self._storage: Dict[Union[int, str], Dict[str, Any]] = {}
 
-    async def get_stats(self, key: Union[int, str], **kwargs: Any) -> Optional[Dict[str, Any]]:
-        return self._storage.get(key, {}).get("stats")
+    async def get_state(self, key: Union[int, str], **kwargs: Any) -> Optional[Dict[str, Any]]:
+        return self._storage.get(key, {}).get("state")
 
-    async def set_stats(self, key: Union[int, str], stats: Dict[str, Any], **kwargs: Any) -> None:
+    async def set_state(self, key: Union[int, str], state: Dict[str, Any], **kwargs: Any) -> None:
         if key not in self._storage:
             self._storage[key] = {}
-        self._storage[key]["stats"] = stats
+        self._storage[key]["state"] = state
 
     async def upsert_data(self, key: Union[int, str], **kwargs: Any) -> None:
         if key not in self._storage:
@@ -26,9 +26,9 @@ class MemoryStorage(BaseStorage):
             return {}
         return self._storage[key].get("data", {})
 
-    async def clear_stats(self, key: Union[int, str], **kwargs: Any) -> None:
-        if key in self._storage and "stats" in self._storage[key]:
-            del self._storage[key]["stats"]
+    async def clear_state(self, key: Union[int, str], **kwargs: Any) -> None:
+        if key in self._storage and "state" in self._storage[key]:
+            del self._storage[key]["state"]
 
     async def clear_data(self, key: Union[int, str], **kwargs: Any) -> None:
         if key in self._storage and "data" in self._storage[key]:

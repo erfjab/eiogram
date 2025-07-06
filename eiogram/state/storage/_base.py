@@ -4,15 +4,15 @@ from typing import Any, Dict, Optional, Union
 
 class BaseStorage(ABC):
     @abstractmethod
-    async def get_stats(self, key: Union[int, str]) -> Optional[Dict[str, Any]]:
+    async def get_state(self, key: Union[int, str]) -> Optional[Dict[str, Any]]:
         pass
 
     @abstractmethod
-    async def set_stats(self, key: Union[int, str], stats: Dict[str, Any]) -> None:
+    async def set_state(self, key: Union[int, str], state: Dict[str, Any]) -> None:
         pass
 
     @abstractmethod
-    async def clear_stats(self, key: Union[int, str]) -> None:
+    async def clear_state(self, key: Union[int, str]) -> None:
         pass
 
     @abstractmethod
