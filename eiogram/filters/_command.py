@@ -1,3 +1,4 @@
+from typing import Optional
 from functools import partial
 from ._base import _BaseTextFilter
 
@@ -14,7 +15,7 @@ class Command(_BaseTextFilter):
     ):
         cmd = command.lower().strip(prefix)
 
-        def check_func(text: str) -> bool:
+        def check_func(text: Optional[str]) -> bool:
             if not text:
                 return False
             text = text.lower().strip()
