@@ -15,6 +15,8 @@ class Command(_BaseTextFilter):
         cmd = command.lower().strip(prefix)
 
         def check_func(text: str) -> bool:
+            if not text:
+                return False
             text = text.lower().strip()
             parts = text.split()
             return parts[0] == f"{prefix}{cmd}"
