@@ -24,6 +24,9 @@ class EntityType(StrEnum):
     PRE = "pre"
     TEXT_LINK = "text_link"
     TEXT_MENTION = "text_mention"
+    BLOCKQUOTE = "blockquote"
+    BANK_CARD = "bank_card"
+    CUSTOM_EMOJI = "custom_emoji"
 
 
 class PhotoSize(BaseModel):
@@ -35,7 +38,7 @@ class PhotoSize(BaseModel):
 
 
 class MessageEntity(BaseModel):
-    type: EntityType
+    type: str
     offset: int
     length: int
     url: Optional[str] = None
