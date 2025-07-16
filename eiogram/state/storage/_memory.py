@@ -6,6 +6,9 @@ class MemoryStorage(BaseStorage):
     def __init__(self):
         self._storage: Dict[Union[int, str], Dict[str, Any]] = {}
 
+    async def get_all(self, key: Union[int, str], **kwargs: Any) -> Dict[str, Any]:
+        return self._storage.get(key, {}).copy()
+
     async def get_state(self, key: Union[int, str], **kwargs: Any) -> Optional[Dict[str, Any]]:
         return self._storage.get(key, {}).get("state")
 
