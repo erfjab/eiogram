@@ -25,17 +25,18 @@ class Dispatcher:
 
     async def process(self, update: Update) -> None:
         try:
-            handler, middlewares = await self._find_handler(update=update)
+            user_context = await self._get_user_context(update.origin.from_user.chatid)
+            handler, middlewares = await self._find_handler(update, user_context["state"])
             if not handler:
                 if self.fallback.handler:
-                    kwargs = await self._build_handler_kwargs(self.fallback.handler, update, {})
+                    kwargs = await self._build_handler_kwargs(self.fallback.handler, update, user_context["data"])
                     await self.fallback.handler(**kwargs)
                 return
 
-            final_handler = await self._build_final_handler(handler.callback, update)
+            final_handler = await self._build_final_handler(handler.callback, update, user_context["data"])
             wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
 
-            await wrapped_handler(update, {})
+            await wrapped_handler(update, user_context["data"])
 
         except Exception as e:
             await self._handle_error(e, update)
@@ -72,21 +73,24 @@ class Dispatcher:
 
         return final_handler
 
-    async def _find_handler(self, update: Update) -> Optional[Tuple[Handler, MiddlewareHandler]]:
-        state = await self.storage.get_state(update.origin.from_user.chatid)
+    async def _find_handler(self, update: Update, current_state: Optional[str]) -> Optional[Tuple[Handler, MiddlewareHandler]]:
         for router in self.routers:
-            handler = await router.matches_update(update=update, state=state)
+            handler = await router.matches_update(update=update, state=current_state)
             if handler:
                 return handler, router.middleware
         return None, None
 
-    async def _build_handler_kwargs(self, handler: Callable, update: Update, middleware_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _get_user_context(self, chat_id: Union[int, str]) -> Dict[str, Any]:
+        storage_data = await self.storage.get_all(chat_id)
+        return {"state": storage_data.get("state"), "data": storage_data.get("data", {})}
+
+    async def _build_handler_kwargs(self, handler: Callable, update: Update, user_data: Dict[str, Any]) -> Dict[str, Any]:
         sig = inspect.signature(handler)
-        kwargs = {}
+        kwargs = {
+            "data": user_data,
+        }
         origin = update.origin
-        for name, value in middleware_data.items():
-            if name in sig.parameters:
-                kwargs[name] = value
+
         type_mapping = {
             Update: update,
             StateManager: StateManager(key=int(origin.from_user.chatid), storage=self.storage),

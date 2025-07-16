@@ -4,6 +4,10 @@ from typing import Any, Dict, Optional, Union
 
 class BaseStorage(ABC):
     @abstractmethod
+    async def get_all(self, key: Union[int, str]) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
     async def get_state(self, key: Union[int, str]) -> Optional[Dict[str, Any]]:
         pass
 

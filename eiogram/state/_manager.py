@@ -11,6 +11,10 @@ class StateManager:
     async def set_state(self, state: State, **kwargs: Any) -> None:
         await self.storage.set_state(self.key, state=state.name, **kwargs)
 
+    async def get_context(self, **kwargs: Any) -> Dict[str, Any]:
+        full_data = await self.storage.get_all(self.key, **kwargs)
+        return {"state": full_data.get("state"), "data": full_data.get("data", {})}
+
     async def get_state(self, **kwargs: Any) -> Optional[State]:
         return await self.storage.get_state(self.key, **kwargs)
 
