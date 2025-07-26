@@ -6,8 +6,16 @@ class MemoryStorage(BaseStorage):
     def __init__(self):
         self._storage: Dict[Union[int, str], Dict[str, Any]] = {}
 
-    async def get_all(self, key: Union[int, str], **kwargs: Any) -> Dict[str, Any]:
+    async def get_context(self, key: Union[int, str], **kwargs: Any) -> Dict[str, Any]:
         return self._storage.get(key, {}).copy()
+
+    async def upsert_context(self, key: Union[int, str], state: Optional[str] = None, **kwargs) -> None:
+        if key not in self._storage:
+            self._storage[key] = {"state": None, "data": {}}
+        if state is not None:
+            self._storage[key]["state"] = state
+        if kwargs:
+            self._storage[key]["data"].update(kwargs)
 
     async def get_state(self, key: Union[int, str], **kwargs: Any) -> Optional[Dict[str, Any]]:
         return self._storage.get(key, {}).get("state")
