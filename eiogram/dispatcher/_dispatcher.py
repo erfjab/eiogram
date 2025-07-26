@@ -29,11 +29,13 @@ class Dispatcher:
             handler, middlewares = await self._find_handler(update, user_context["state"])
             if not handler:
                 if self.fallback.handler:
-                    kwargs = await self._build_handler_kwargs(self.fallback.handler, update, user_context["data"])
+                    kwargs = await self._build_handler_kwargs(
+                        self.fallback.handler, update, user_data=user_context["data"], middleware_data={}
+                    )
                     await self.fallback.handler(**kwargs)
                 return
 
-            final_handler = await self._build_final_handler(handler.callback, update, user_context["data"])
+            final_handler = await self._build_final_handler(handler.callback, update)
             wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
 
             await wrapped_handler(update, user_context["data"])
@@ -68,7 +70,7 @@ class Dispatcher:
 
     async def _build_final_handler(self, handler: Callable, update: Update) -> Callable:
         async def final_handler(update: Update, data: Dict[str, Any]) -> Any:
-            kwargs = await self._build_handler_kwargs(handler, update, data)
+            kwargs = await self._build_handler_kwargs(handler, update, user_data={}, middleware_data=data)
             return await handler(**kwargs)
 
         return final_handler
@@ -81,15 +83,19 @@ class Dispatcher:
         return None, None
 
     async def _get_user_context(self, chat_id: Union[int, str]) -> Dict[str, Any]:
-        storage_data = await self.storage.get_all(chat_id)
-        return {"state": storage_data.get("state"), "data": storage_data.get("data", {})}
+        storage_data = await self.storage.get_all(int(chat_id))
+        return {"state": storage_data.get("state", None), "data": storage_data.get("data", {})}
 
-    async def _build_handler_kwargs(self, handler: Callable, update: Update, user_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _build_handler_kwargs(
+        self, handler: Callable, update: Update, user_data: Dict[str, Any], middleware_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         sig = inspect.signature(handler)
-        kwargs = {
-            "data": user_data,
-        }
+        kwargs = {}
         origin = update.origin
+
+        for key, value in middleware_data.items():
+            if key not in kwargs and key in sig.parameters:
+                kwargs[key] = value
 
         type_mapping = {
             Update: update,
@@ -110,10 +116,10 @@ class Dispatcher:
                 value = type_mapping[param_type]
                 if value is not None:
                     kwargs[param_name] = value
-
             elif update.callback_query and inspect.isclass(param_type) and issubclass(param_type, CallbackData):
                 kwargs[param_name] = param_type.unpack(update.callback_query.data)
-
+            elif param_name == "state_data":
+                kwargs[param_name] = user_data
             elif hasattr(update, param_name):
                 kwargs[param_name] = getattr(update, param_name)
             elif hasattr(update, "data") and param_name in update.data:
