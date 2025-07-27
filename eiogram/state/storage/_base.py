@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 
 class BaseStorage(ABC):
     @abstractmethod
-    async def get_all(self, key: Union[int, str]) -> Dict[str, Any]:
+    async def get_context(self, key: Union[int, str]) -> Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -33,4 +33,8 @@ class BaseStorage(ABC):
 
     @abstractmethod
     async def get_data(self, key: Union[int, str]) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def upsert_context(self, key: Union[int, str], state: Optional[str] = None, **data) -> None:
         pass

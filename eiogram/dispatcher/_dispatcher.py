@@ -83,7 +83,7 @@ class Dispatcher:
         return None, None
 
     async def _get_user_context(self, chat_id: Union[int, str]) -> Dict[str, Any]:
-        storage_data = await self.storage.get_all(int(chat_id))
+        storage_data = await self.storage.get_context(int(chat_id))
         return {"state": storage_data.get("state", None), "data": storage_data.get("data", {})}
 
     async def _build_handler_kwargs(

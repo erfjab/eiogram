@@ -12,8 +12,12 @@ class StateManager:
         await self.storage.set_state(self.key, state=state.name, **kwargs)
 
     async def get_context(self, **kwargs: Any) -> Dict[str, Any]:
-        full_data = await self.storage.get_all(self.key, **kwargs)
+        full_data = await self.storage.get_context(self.key, **kwargs)
         return {"state": full_data.get("state"), "data": full_data.get("data", {})}
+
+    async def upsert_context(self, state: Optional[State] = None, **kwargs: Any) -> None:
+        state_name = state.name if state is not None else None
+        await self.storage.upsert_context(key=self.key, state=state_name, **kwargs)
 
     async def get_state(self, **kwargs: Any) -> Optional[State]:
         return await self.storage.get_state(self.key, **kwargs)
