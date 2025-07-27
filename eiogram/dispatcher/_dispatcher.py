@@ -1,13 +1,13 @@
 import inspect
-from typing import Optional, TypeVar, Union, List, Tuple, Callable, Dict, Any
-from ._handlers import Handler, MiddlewareHandler
+from typing import Optional, TypeVar, Union, List, Tuple, Callable, Dict, Any, get_origin, get_args, Annotated
+from ._handlers import Handler, MiddlewareHandler, FallbackHandler, ErrorHandler
 from ._router import Router
 from ..client import Bot
 from ..types import Update, Message, CallbackQuery, InlineQuery
-from ..state.storage import BaseStorage, MemoryStorage
 from ..state import StateManager
+from ..state.storage import BaseStorage, MemoryStorage
 from ..utils.callback_data import CallbackData
-from ._handlers import FallbackHandler, ErrorHandler
+from ..utils.depends import Depends
 
 U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 
@@ -86,6 +86,13 @@ class Dispatcher:
         storage_data = await self.storage.get_context(int(chat_id))
         return {"state": storage_data.get("state", None), "data": storage_data.get("data", {})}
 
+    def _get_dependency_from_annotated(self, param_type: Any) -> Optional[Depends]:
+        if get_origin(param_type) is Annotated:
+            for arg in get_args(param_type)[1:]:
+                if isinstance(arg, Depends):
+                    return arg
+        return None
+
     async def _build_handler_kwargs(
         self, handler: Callable, update: Update, user_data: Dict[str, Any], middleware_data: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -111,18 +118,29 @@ class Dispatcher:
                 continue
 
             param_type = param.annotation
+            param_default = param.default
 
             if param_type in type_mapping:
                 value = type_mapping[param_type]
                 if value is not None:
                     kwargs[param_name] = value
-            elif update.callback_query and inspect.isclass(param_type) and issubclass(param_type, CallbackData):
-                kwargs[param_name] = param_type.unpack(update.callback_query.data)
             elif param_name == "state_data":
                 kwargs[param_name] = user_data
+            elif update.callback_query and inspect.isclass(param_type) and issubclass(param_type, CallbackData):
+                kwargs[param_name] = param_type.unpack(update.callback_query.data)
             elif hasattr(update, param_name):
                 kwargs[param_name] = getattr(update, param_name)
             elif hasattr(update, "data") and param_name in update.data:
                 kwargs[param_name] = update.data[param_name]
+            else:
+                annotated_dependency = self._get_dependency_from_annotated(param_type)
+                if annotated_dependency:
+                    dependency_func = annotated_dependency.dependency
+                    dep_kwargs = await self._build_handler_kwargs(dependency_func, update, user_data, middleware_data)
+                    kwargs[param_name] = await dependency_func(**dep_kwargs)
+                elif isinstance(param_default, Depends):
+                    dependency_func = param_default.dependency
+                    dep_kwargs = await self._build_handler_kwargs(dependency_func, update, user_data, middleware_data)
+                    kwargs[param_name] = await dependency_func(**dep_kwargs)
 
         return kwargs
