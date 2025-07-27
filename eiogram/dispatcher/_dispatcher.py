@@ -35,7 +35,7 @@ class Dispatcher:
                     await self.fallback.handler(**kwargs)
                 return
 
-            final_handler = await self._build_final_handler(handler.callback, update)
+            final_handler = await self._build_final_handler(handler.callback, update, user_context["data"])
             wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
 
             await wrapped_handler(update, user_context["data"])
@@ -68,9 +68,9 @@ class Dispatcher:
 
         return wrapper
 
-    async def _build_final_handler(self, handler: Callable, update: Update) -> Callable:
+    async def _build_final_handler(self, handler: Callable, update: Update, user_data: Dict[str, Any]) -> Callable:
         async def final_handler(update: Update, data: Dict[str, Any]) -> Any:
-            kwargs = await self._build_handler_kwargs(handler, update, user_data={}, middleware_data=data)
+            kwargs = await self._build_handler_kwargs(handler, update, user_data=user_data, middleware_data=data)
             return await handler(**kwargs)
 
         return final_handler
@@ -99,7 +99,6 @@ class Dispatcher:
         sig = inspect.signature(handler)
         kwargs = {}
         origin = update.origin
-
         for key, value in middleware_data.items():
             if key not in kwargs and key in sig.parameters:
                 kwargs[key] = value
