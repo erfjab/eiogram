@@ -1,13 +1,13 @@
 import inspect
 from typing import Optional, TypeVar, Union, List, Tuple, Callable, Dict, Any
-from ._handlers import Handler, MiddlewareHandler
+from ._handlers import Handler, MiddlewareHandler, FallbackHandler, ErrorHandler
 from ._router import Router
 from ..client import Bot
 from ..types import Update, Message, CallbackQuery, InlineQuery
-from ..state.storage import BaseStorage, MemoryStorage
 from ..state import StateManager
+from ..state.storage import BaseStorage, MemoryStorage
 from ..utils.callback_data import CallbackData
-from ._handlers import FallbackHandler, ErrorHandler
+from ..utils.depends import Depends
 
 U = TypeVar("U", bound=Union[Update, Message, CallbackQuery])
 
@@ -111,7 +111,7 @@ class Dispatcher:
                 continue
 
             param_type = param.annotation
-
+            param_default = param.default
             if param_type in type_mapping:
                 value = type_mapping[param_type]
                 if value is not None:
@@ -120,6 +120,10 @@ class Dispatcher:
                 kwargs[param_name] = param_type.unpack(update.callback_query.data)
             elif param_name == "state_data":
                 kwargs[param_name] = user_data
+            elif isinstance(param_default, Depends):
+                dependency_func = param_default.dependency
+                dep_kwargs = await self._build_handler_kwargs(dependency_func, update, user_data, middleware_data)
+                kwargs[param_name] = await dependency_func(**dep_kwargs)
             elif hasattr(update, param_name):
                 kwargs[param_name] = getattr(update, param_name)
             elif hasattr(update, "data") and param_name in update.data:
