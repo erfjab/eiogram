@@ -24,9 +24,15 @@ class _BaseTextFilter(Filter):
 
     def __init__(self, check_func: Callable[[str], bool], context: bool = False):
         def filter_func(msg: Any) -> bool:
+            if not hasattr(msg, "text"):
+                return False
+
             if context:
+                if not hasattr(msg, "caption"):
+                    return False
                 texts = [getattr(msg, attr, None) for attr in ("text", "caption")]
                 return any(t is not None and check_func(t) for t in texts)
-            return hasattr(msg, "text") and check_func(msg.text)
+
+            return hasattr(msg, "text") and msg.text is not None and check_func(msg.text)
 
         super().__init__(filter_func)
