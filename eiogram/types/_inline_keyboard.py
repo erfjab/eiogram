@@ -8,6 +8,7 @@ class InlineKeyboardButton(BaseModel):
     url: Optional[str] = None
     web_app: Optional[str] = None
     copy_text: Optional[str] = None
+    switch_inline_query_current_chat: Optional[str] = None
 
     def dict(self) -> dict:
         result = {"text": self.text}
@@ -19,6 +20,8 @@ class InlineKeyboardButton(BaseModel):
             result["web_app"] = {"url": self.web_app}
         if self.copy_text is not None:
             result["copy_text"] = {"text": self.copy_text}
+        if self.switch_inline_query_current_chat is not None:
+            result["switch_inline_query_current_chat"] = self.switch_inline_query_current_chat
         return result
 
 
