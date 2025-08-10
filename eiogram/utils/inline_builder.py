@@ -13,8 +13,9 @@ class InlineKeyboardBuilder:
         url: Optional[str] = None,
         web_app: Optional[str] = None,
         copy_text: Optional[str] = None,
+        switch_inline_query_current_chat: Optional[str] = None,
     ) -> "InlineKeyboardBuilder":
-        if not any([callback_data, url, web_app, copy_text]):
+        if not any([callback_data, url, web_app, copy_text, switch_inline_query_current_chat]):
             raise ValueError("At least one button action must be specified")
 
         button = InlineKeyboardButton(
@@ -23,6 +24,7 @@ class InlineKeyboardBuilder:
             web_app=web_app,
             url=url,
             copy_text=copy_text,
+            switch_inline_query_current_chat=switch_inline_query_current_chat,
         )
 
         if not self._keyboard:
@@ -90,6 +92,9 @@ class InlineKeyboardBuilder:
                         "url": btn.url,
                         "web_app": {"url": btn.web_app} if btn.web_app else None,
                         "copy_text": {"text": btn.copy_text} if btn.copy_text else None,
+                        "switch_inline_query_current_chat": btn.switch_inline_query_current_chat
+                        if btn.switch_inline_query_current_chat
+                        else None,
                     }.items()
                     if v is not None
                 }
@@ -100,6 +105,7 @@ class InlineKeyboardBuilder:
                         btn.url,
                         btn.web_app,
                         btn.copy_text,
+                        btn.switch_inline_query_current_chat,
                     ]
                 )
             ]
