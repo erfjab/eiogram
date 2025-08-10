@@ -8,6 +8,7 @@ if TYPE_CHECKING:
         BotCommand,
         ChatMemberStatus,
         AnswerInlineQuery,
+        Update,
     )
 
 
@@ -219,3 +220,19 @@ class Bot:
         from .methods._answer_inline_query import AnswerInlineQueryMethod
 
         return await AnswerInlineQueryMethod(self.token).execute(answer=answer)
+
+    async def get_updates(
+        self,
+        offset: Optional[int] = None,
+        limit: int = 100,
+        timeout: int = 0,
+        allowed_updates: Optional[List[str]] = None,
+    ) -> List["Update"]:
+        from .methods._get_updates import GetUpdates
+
+        return await GetUpdates(self.token).execute(
+            offset=offset,
+            limit=limit,
+            timeout=timeout,
+            allowed_updates=allowed_updates,
+        )

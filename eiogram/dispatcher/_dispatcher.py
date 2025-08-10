@@ -1,4 +1,6 @@
 import inspect
+import asyncio
+import logging
 from typing import Optional, TypeVar, Union, List, Tuple, Callable, Dict, Any, get_origin, get_args, Annotated
 from ._handlers import Handler, MiddlewareHandler, FallbackHandler, ErrorHandler
 from ._router import Router
@@ -19,6 +21,7 @@ class Dispatcher:
         self.storage = storage or MemoryStorage()
         self.fallback = FallbackHandler()
         self.error = ErrorHandler()
+        self._logger = logging.getLogger(__name__)
 
     def include_router(self, router: "Router") -> None:
         self.routers.append(router)
@@ -37,9 +40,7 @@ class Dispatcher:
 
             final_handler = await self._build_final_handler(handler.callback, update, user_context["data"])
             wrapped_handler = self._wrap_middlewares(middlewares.middlewares, final_handler)
-
             await wrapped_handler(update, user_context["data"])
-
         except Exception as e:
             await self._handle_error(e, update)
 
@@ -143,3 +144,61 @@ class Dispatcher:
                     kwargs[param_name] = await dependency_func(**dep_kwargs)
 
         return kwargs
+
+    async def run_polling(
+        self,
+        *,
+        interval: float = 1.0,
+        limit: int = 100,
+        timeout: int = 0,
+        allowed_updates: Optional[List[str]] = None,
+        offset: Optional[int] = None,
+    ) -> None:
+        self._logger.info(f"Polling started (interval={interval}, timeout={timeout})")
+        last_highest: Optional[int] = None
+        pending: set[asyncio.Task] = set()
+
+        def _task_done(t: asyncio.Task) -> None:
+            pending.discard(t)
+            if t.cancelled():
+                return
+            exc = t.exception()
+            if exc:
+                self._logger.exception(f"Unhandled exception in update task: {exc}")
+
+        while True:
+            try:
+                try:
+                    updates = await self.bot.get_updates(
+                        offset=offset,
+                        limit=limit,
+                        timeout=timeout,
+                        allowed_updates=allowed_updates,
+                    )
+                except Exception as e:
+                    self._logger.exception(f"Error while fetching updates: {e}")
+                    if timeout == 0:
+                        await asyncio.sleep(interval)
+                    continue
+
+                if updates:
+                    highest = max(u.update_id for u in updates)
+                    if last_highest is None or highest > last_highest:
+                        offset = highest + 1
+                        last_highest = highest
+                    for upd in updates:
+                        t = asyncio.create_task(self.process(upd))
+                        pending.add(t)
+                        t.add_done_callback(_task_done)
+
+                if timeout == 0:
+                    await asyncio.sleep(interval)
+            except asyncio.CancelledError:
+                break
+            except Exception as loop_error:
+                self._logger.exception(f"Unexpected error in polling loop: {loop_error}")
+                await asyncio.sleep(interval)
+
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
+        self._logger.info("Polling stopped")
