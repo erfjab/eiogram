@@ -47,7 +47,7 @@ class MessageEntity(BaseModel):
 
 class Message(BaseModel):
     message_id: int
-    from_user: User = Field(..., alias="from")
+    from_user: Optional[User] = Field(None, alias="from")
     chat: Chat
     text: Optional[str] = None
     photo: Optional[list[PhotoSize]] = None
