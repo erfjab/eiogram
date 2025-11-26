@@ -136,6 +136,33 @@ class Message(BaseModel):
             reply_markup=reply_markup,
         )
 
+    async def edit_text(
+        self,
+        text: str,
+    ) -> "Message":
+        if self.photo:
+            return await self.bot.edit_message_caption(
+                chat_id=self.chat.id,
+                message_id=self.message_id,
+                caption=text,
+            )
+
+        return await self.bot.edit_message_text(
+            chat_id=self.chat.id,
+            message_id=self.message_id,
+            text=text,
+        )
+
+    async def edit_reply_markup(
+        self,
+        reply_markup: "InlineKeyboardMarkup",
+    ) -> "Message":
+        return await self.bot.edit_message_reply_markup(
+            chat_id=self.chat.id,
+            message_id=self.message_id,
+            reply_markup=reply_markup,
+        )
+
     async def delete(self) -> bool:
         return await self.bot.delete_messages(chat_id=self.chat.id, message_ids=[self.message_id])
 

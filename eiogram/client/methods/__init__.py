@@ -1,6 +1,8 @@
 from ._answer_callback import AnswerCallbackQuery
 from ._delete_messages import DeleteMessages
 from ._edit_message import EditMessage
+from ._edit_message_text import EditMessageText
+from ._edit_message_reply_markup import EditMessageReplyMarkup
 from ._get_me import GetMe
 from ._restrict_user import RestrictUser
 from ._send_message import SendMessage
@@ -17,6 +19,8 @@ __all__ = [
     "AnswerCallbackQuery",
     "DeleteMessages",
     "EditMessage",
+    "EditMessageText",
+    "EditMessageReplyMarkup",
     "GetMe",
     "RestrictUser",
     "SendMessage",
