@@ -4,6 +4,7 @@ from ._callback_query import CallbackQuery
 from ._message import Message, PhotoSize
 from ._update import Update
 from ._user import User
+from ._contact import Contact
 from ._inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
 from ._reply_keyboard import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from ._shared import UsersShared, ChatShared, SharedUser
@@ -26,6 +27,7 @@ __all__ = [
     "PhotoSize",
     "Update",
     "User",
+    "Contact",
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",
     "KeyboardButton",

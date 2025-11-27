@@ -4,6 +4,7 @@ from pydantic import Field
 from ._base import BotModel
 from ._user import User
 from ._chat import Chat
+from ._contact import Contact
 from ._inline_keyboard import InlineKeyboardMarkup
 from ._shared import UsersShared, ChatShared
 
@@ -59,7 +60,7 @@ class Message(BotModel):
     entities: Optional[List[MessageEntity]] = None
     users_shared: Optional[UsersShared] = None
     chat_shared: Optional[ChatShared] = None
-    contact: Optional[dict] = None
+    contact: Optional[Contact] = None
 
     @property
     def id(self) -> int:
