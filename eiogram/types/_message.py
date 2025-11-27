@@ -5,6 +5,7 @@ from ._base import BotModel
 from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
+from ._shared import UsersShared, ChatShared
 
 
 class EntityType(StrEnum):
@@ -56,6 +57,9 @@ class Message(BotModel):
     caption: Optional[str] = None
     caption_entities: Optional[List[MessageEntity]] = None
     entities: Optional[List[MessageEntity]] = None
+    users_shared: Optional[UsersShared] = None
+    chat_shared: Optional[ChatShared] = None
+    contact: Optional[dict] = None
 
     @property
     def id(self) -> int:
