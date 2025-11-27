@@ -43,6 +43,8 @@ class MessageEntity(BotModel):
     length: int
     url: Optional[str] = None
     user: Optional["User"] = None
+    language: Optional[str] = None
+    custom_emoji_id: Optional[str] = None
 
 
 class Message(BotModel):
