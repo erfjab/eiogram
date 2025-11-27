@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Any
 from pydantic import BaseModel, model_validator
 
 if TYPE_CHECKING:
@@ -8,7 +8,10 @@ if TYPE_CHECKING:
 class BotModel(BaseModel):
     """Base model that supports bot injection for Telegram types."""
 
-    bot: Optional["Bot"] = None
+    if TYPE_CHECKING:
+        bot: Optional["Bot"] = None
+    else:
+        bot: Optional[Any] = None
 
     class Config:
         validate_by_name = True
