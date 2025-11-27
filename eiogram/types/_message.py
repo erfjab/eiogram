@@ -1,10 +1,10 @@
 from enum import StrEnum
 from typing import Optional, Union, List
-from pydantic import BaseModel, Field
+from pydantic import Field
+from ._base import BotModel
 from ._user import User
 from ._chat import Chat
 from ._inline_keyboard import InlineKeyboardMarkup
-from ..client import Bot
 
 
 class EntityType(StrEnum):
@@ -29,7 +29,7 @@ class EntityType(StrEnum):
     CUSTOM_EMOJI = "custom_emoji"
 
 
-class PhotoSize(BaseModel):
+class PhotoSize(BotModel):
     file_id: str
     file_unique_id: str
     width: int
@@ -37,7 +37,7 @@ class PhotoSize(BaseModel):
     file_size: Optional[int] = None
 
 
-class MessageEntity(BaseModel):
+class MessageEntity(BotModel):
     type: str
     offset: int
     length: int
@@ -45,7 +45,7 @@ class MessageEntity(BaseModel):
     user: Optional["User"] = None
 
 
-class Message(BaseModel):
+class Message(BotModel):
     message_id: int
     from_user: Optional[User] = Field(None, alias="from")
     chat: Chat
@@ -53,12 +53,7 @@ class Message(BaseModel):
     photo: Optional[list[PhotoSize]] = None
     caption: Optional[str] = None
     caption_entities: Optional[List[MessageEntity]] = None
-    bot: Optional[Bot] = None
     entities: Optional[List[MessageEntity]] = None
-
-    class Config:
-        validate_by_name = True
-        arbitrary_types_allowed = True
 
     @property
     def id(self) -> int:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 import httpx
 from ...utils.exceptions import (
     TelegramError,
@@ -10,17 +10,17 @@ from ...utils.exceptions import (
     UnauthorizedError,
 )
 
+if TYPE_CHECKING:
+    from .._bot import Bot
+
 
 class MethodBase:
     _shared_client: Optional[httpx.AsyncClient] = None
 
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self, bot: "Bot"):
+        self.bot = bot
+        self.token = bot.token
         self.base_url = f"https://api.telegram.org/bot{self.token}/"
-
-        from .._bot import Bot
-
-        self.bot = Bot(token=self.token)
 
     @classmethod
     def _get_client(cls) -> httpx.AsyncClient:
@@ -78,5 +78,4 @@ class MethodBase:
                 raise UnauthorizedError(description)
             raise TelegramAPIError(description, error_code)
 
-        data["bot"] = self.bot
         return data

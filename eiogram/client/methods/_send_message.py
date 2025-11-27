@@ -24,4 +24,6 @@ class SendMessage(MethodBase):
             data["reply_to_message_id"] = reply_to_message_id
 
         response = await self._make_request("POST", "sendMessage", data)
-        return Message(**response["result"])
+        result = response["result"]
+        result["bot"] = self.bot
+        return Message(**result)

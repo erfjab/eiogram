@@ -26,4 +26,6 @@ class EditMessage(MethodBase):
             data.update({"chat_id": chat_id, "message_id": message_id})
 
         response = await self._make_request("POST", "editMessageText", data)
-        return Message(**response["result"])
+        result = response["result"]
+        result["bot"] = self.bot
+        return Message(**result)
