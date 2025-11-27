@@ -105,6 +105,7 @@ class MessageParser:
     def _get_start_tag(entity: "MessageEntity") -> str:
         if entity.type in _START_TAGS:
             return _START_TAGS[entity.type]
+
         if entity.type == EntityType.TEXT_LINK and entity.url:
             return f"<a href='{escape(entity.url)}'>"
 
@@ -112,9 +113,8 @@ class MessageParser:
             return f"<a href='tg://user?id={entity.user.id}'>"
 
         if entity.type == EntityType.CUSTOM_EMOJI:
-            custom_emoji_id = getattr(entity, "custom_emoji_id", None)
-            if custom_emoji_id:
-                return f"<tg-emoji emoji-id='{custom_emoji_id}'>"
+            if entity.custom_emoji_id:
+                return f"<tg-emoji emoji-id='{entity.custom_emoji_id}'>"
             return "<tg-emoji>"
 
         return ""
