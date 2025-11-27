@@ -5,6 +5,8 @@ from ._message import Message, PhotoSize
 from ._update import Update
 from ._user import User
 from ._inline_keyboard import InlineKeyboardButton, InlineKeyboardMarkup
+from ._reply_keyboard import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from ._shared import UsersShared, ChatShared, SharedUser
 from ._bot_command import BotCommand
 from ._inline_query import (
     InlineQuery,
@@ -26,6 +28,12 @@ __all__ = [
     "User",
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",
+    "KeyboardButton",
+    "ReplyKeyboardMarkup",
+    "ReplyKeyboardRemove",
+    "UsersShared",
+    "ChatShared",
+    "SharedUser",
     "BotCommand",
     "InlineQuery",
     "InlineQueryResultArticle",
