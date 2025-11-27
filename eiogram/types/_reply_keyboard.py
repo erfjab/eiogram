@@ -23,16 +23,25 @@ class KeyboardButton(BaseModel):
                 "request_id": randint(1, 999999),
                 "user_is_bot": False,
                 "max_quantity": 1,
+                "request_name": True,
+                "request_username": True,
+                "request_photo": True,
             }
         elif self.request_channel:
             result["request_chat"] = {
                 "request_id": randint(1, 999999),
                 "chat_is_channel": True,
+                "request_title": True,
+                "request_username": True,
+                "request_photo": True,
             }
         elif self.request_group:
             result["request_chat"] = {
                 "request_id": randint(1, 999999),
                 "chat_is_channel": False,
+                "request_title": True,
+                "request_username": True,
+                "request_photo": True,
             }
 
         return result
