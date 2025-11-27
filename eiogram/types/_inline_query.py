@@ -1,19 +1,16 @@
 from typing import Optional, List, Union
 from pydantic import BaseModel, Field
+from ._base import BotModel
 from ._user import User
 from ._inline_keyboard import InlineKeyboardMarkup
 
 
-class InlineQuery(BaseModel):
+class InlineQuery(BotModel):
     id: str
     from_user: User = Field(..., alias="from")
     query: str = ""
     offset: str = ""
     chat_type: Optional[str] = None
-
-    class Config:
-        validate_by_name = True
-        arbitrary_types_allowed = True
 
     def __str__(self) -> str:
         return f"InlineQuery(id={self.id}, from={self.from_user.full_name}, query={self.query})"

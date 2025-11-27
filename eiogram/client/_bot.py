@@ -57,7 +57,7 @@ class Bot:
         from .methods._get_me import GetMe
 
         if not self._get_me:
-            me = await GetMe(self.token).execute()
+            me = await GetMe(self).execute()
             self._get_me = me
         return self._get_me
 
@@ -75,7 +75,7 @@ class Bot:
     ) -> bool:
         from .methods._set_webhook import SetWebhook
 
-        return await SetWebhook(self.token).execute(
+        return await SetWebhook(self).execute(
             url=url,
             max_connections=max_connections,
             allowed_updates=allowed_updates,
@@ -91,7 +91,7 @@ class Bot:
     ) -> bool:
         from .methods._restrict_user import RestrictUser
 
-        return await RestrictUser(self.token).execute(
+        return await RestrictUser(self).execute(
             chat_id=chat_id,
             user_id=user_id,
             until_date=until_date,
@@ -104,7 +104,7 @@ class Bot:
     ) -> "ChatMemberStatus":
         from .methods._get_chat_member import GetChatMember
 
-        return await GetChatMember(self.token).execute(
+        return await GetChatMember(self).execute(
             chat_id=chat_id,
             user_id=user_id,
         )
@@ -115,7 +115,7 @@ class Bot:
     ) -> bool:
         from .methods._set_my_commands import SetMyCommands
 
-        return await SetMyCommands(self.token).execute(
+        return await SetMyCommands(self).execute(
             commands=commands,
         )
 
@@ -125,7 +125,7 @@ class Bot:
     ) -> bool:
         from .methods._delete_webhook import DeleteWebhook
 
-        return await DeleteWebhook(self.token).execute(
+        return await DeleteWebhook(self).execute(
             drop_pending_updates=drop_pending_updates,
         )
 
@@ -138,7 +138,7 @@ class Bot:
     ) -> "Message":
         from .methods._send_message import SendMessage
 
-        return await SendMessage(self.token).execute(
+        return await SendMessage(self).execute(
             chat_id=chat_id,
             text=text,
             reply_markup=reply_markup,
@@ -154,9 +154,7 @@ class Bot:
     ) -> "Message":
         from .methods._edit_message import EditMessage
 
-        return await EditMessage(self.token).execute(
-            chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup
-        )
+        return await EditMessage(self).execute(chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup)
 
     async def edit_message_caption(
         self,
@@ -167,7 +165,7 @@ class Bot:
     ) -> "Message":
         from .methods._edit_message_caption import EditMessageCaption
 
-        return await EditMessageCaption(self.token).execute(
+        return await EditMessageCaption(self).execute(
             chat_id=chat_id,
             message_id=message_id,
             caption=caption,
@@ -182,7 +180,7 @@ class Bot:
     ) -> "Message":
         from .methods._edit_message_text import EditMessageText
 
-        return await EditMessageText(self.token).execute(
+        return await EditMessageText(self).execute(
             chat_id=chat_id,
             message_id=message_id,
             text=text,
@@ -196,7 +194,7 @@ class Bot:
     ) -> "Message":
         from .methods._edit_message_reply_markup import EditMessageReplyMarkup
 
-        return await EditMessageReplyMarkup(self.token).execute(
+        return await EditMessageReplyMarkup(self).execute(
             chat_id=chat_id,
             message_id=message_id,
             reply_markup=reply_markup,
@@ -211,7 +209,7 @@ class Bot:
     ) -> "Message":
         from .methods._send_photo import SendPhoto
 
-        return await SendPhoto(self.token).execute(chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup)
+        return await SendPhoto(self).execute(chat_id=chat_id, photo=photo, caption=caption, reply_markup=reply_markup)
 
     async def pin_message(
         self,
@@ -221,7 +219,7 @@ class Bot:
     ) -> bool:
         from .methods._pin_message import PinMessage
 
-        return await PinMessage(self.token).execute(
+        return await PinMessage(self).execute(
             chat_id=chat_id,
             message_id=message_id,
             disable_notification=disable_notification,
@@ -230,7 +228,7 @@ class Bot:
     async def delete_messages(self, chat_id: Union[int, str], message_ids: List[int]) -> List[bool]:
         from .methods._delete_messages import DeleteMessages
 
-        return await DeleteMessages(self.token).execute(chat_id=chat_id, message_ids=message_ids)
+        return await DeleteMessages(self).execute(chat_id=chat_id, message_ids=message_ids)
 
     async def answer_callback(
         self,
@@ -240,14 +238,12 @@ class Bot:
     ) -> bool:
         from .methods._answer_callback import AnswerCallbackQuery
 
-        return await AnswerCallbackQuery(self.token).execute(
-            callback_query_id=callback_query_id, text=text, show_alert=show_alert
-        )
+        return await AnswerCallbackQuery(self).execute(callback_query_id=callback_query_id, text=text, show_alert=show_alert)
 
     async def answer_inline_query(self, answer: "AnswerInlineQuery") -> bool:
         from .methods._answer_inline_query import AnswerInlineQueryMethod
 
-        return await AnswerInlineQueryMethod(self.token).execute(answer=answer)
+        return await AnswerInlineQueryMethod(self).execute(answer=answer)
 
     async def get_updates(
         self,
@@ -258,7 +254,7 @@ class Bot:
     ) -> List["Update"]:
         from .methods._get_updates import GetUpdates
 
-        return await GetUpdates(self.token).execute(
+        return await GetUpdates(self).execute(
             offset=offset,
             limit=limit,
             timeout=timeout,

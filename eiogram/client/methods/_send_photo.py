@@ -23,4 +23,6 @@ class SendPhoto(MethodBase):
             data["reply_markup"] = reply_markup.dict()
 
         response = await self._make_request("POST", "sendPhoto", data)
-        return Message(**response["result"])
+        result = response["result"]
+        result["bot"] = self.bot
+        return Message(**result)

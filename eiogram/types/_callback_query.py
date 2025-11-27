@@ -1,21 +1,16 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
+from ._base import BotModel
 from ._user import User
 from ._message import Message
 from ._chat import Chat
-from ..client import Bot
 
 
-class CallbackQuery(BaseModel):
+class CallbackQuery(BotModel):
     id: str
     from_user: User = Field(..., alias="from")
     message: Optional[Message] = None
     data: Optional[str] = None
-    bot: Optional[Bot] = None
-
-    class Config:
-        validate_by_name = True
-        arbitrary_types_allowed = True
 
     def __str__(self) -> str:
         return f"CallbackQuery(id={self.id}, from={self.from_user.full_name}, data={self.data})"
@@ -24,5 +19,5 @@ class CallbackQuery(BaseModel):
     def chat(self) -> Optional[Chat]:
         return self.message.chat if self.message else None
 
-    def answer(self, text: Optional[str] = None, show_alert: Optional[bool] = None) -> bool:
-        return self.bot.answer_callback(callback_query_id=self.id, text=text, show_alert=show_alert)
+    async def answer(self, text: Optional[str] = None, show_alert: Optional[bool] = None) -> bool:
+        return await self.bot.answer_callback(callback_query_id=self.id, text=text, show_alert=show_alert)

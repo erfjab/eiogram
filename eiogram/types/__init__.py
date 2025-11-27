@@ -1,3 +1,4 @@
+from ._base import BotModel
 from ._chat import Chat, ChatType, ChatMemberStatus
 from ._callback_query import CallbackQuery
 from ._message import Message, PhotoSize
@@ -14,6 +15,7 @@ from ._inline_query import (
 )
 
 __all__ = [
+    "BotModel",
     "Chat",
     "ChatType",
     "ChatMemberStatus",
