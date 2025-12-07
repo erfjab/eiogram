@@ -145,6 +145,24 @@ class Bot:
             reply_to_message_id=reply_to_message_id,
         )
 
+    async def forward_message(
+        self,
+        chat_id: Union[int, str],
+        from_chat_id: Union[int, str],
+        message_id: int,
+        disable_notification: Optional[bool] = None,
+        protect_content: Optional[bool] = None,
+    ) -> "Message":
+        from .methods._forward_message import ForwardMessage
+
+        return await ForwardMessage(self).execute(
+            chat_id=chat_id,
+            from_chat_id=from_chat_id,
+            message_id=message_id,
+            disable_notification=disable_notification,
+            protect_content=protect_content,
+        )
+
     async def edit_message(
         self,
         chat_id: Union[int, str],

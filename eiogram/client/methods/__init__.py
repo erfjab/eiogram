@@ -14,6 +14,7 @@ from ._pin_message import PinMessage
 from ._get_chat_member import GetChatMember
 from ._answer_inline_query import AnswerInlineQueryMethod
 from ._edit_message_caption import EditMessageCaption
+from ._forward_message import ForwardMessage
 
 __all__ = [
     "AnswerCallbackQuery",
@@ -32,4 +33,5 @@ __all__ = [
     "GetChatMember",
     "AnswerInlineQueryMethod",
     "EditMessageCaption",
+    "ForwardMessage",
 ]

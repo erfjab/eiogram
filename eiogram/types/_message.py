@@ -61,10 +61,20 @@ class Message(BotModel):
     users_shared: Optional[UsersShared] = None
     chat_shared: Optional[ChatShared] = None
     contact: Optional[Contact] = None
+    forward_from: Optional[User] = None
+    forward_from_chat: Optional[Chat] = None
+    forward_from_message_id: Optional[int] = None
+    forward_signature: Optional[str] = None
+    forward_sender_name: Optional[str] = None
+    forward_date: Optional[int] = None
 
     @property
     def id(self) -> int:
         return self.message_id
+
+    @property
+    def is_forward(self) -> bool:
+        return bool(self.forward_date)
 
     @property
     def context(self) -> Optional[str]:
