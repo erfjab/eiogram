@@ -1,46 +1,53 @@
+from dataclasses import dataclass
 from typing import Optional, List, Union
-from pydantic import BaseModel, Field
 from ._base import BotModel
 from ._user import User
 from ._inline_keyboard import InlineKeyboardMarkup
 
 
+@dataclass
 class InlineQuery(BotModel):
     id: str
-    from_user: User = Field(..., alias="from")
+    from_user: User
     query: str = ""
     offset: str = ""
     chat_type: Optional[str] = None
+
+    _aliases = {"from_user": "from"}
 
     def __str__(self) -> str:
         return f"InlineQuery(id={self.id}, from={self.from_user.full_name}, query={self.query})"
 
 
-class InputTextMessageContent(BaseModel):
+@dataclass
+class InputTextMessageContent(BotModel):
     message_text: str
     parse_mode: Optional[str] = "HTML"
     disable_web_page_preview: Optional[bool] = None
 
 
-class InlineQueryResult(BaseModel):
+@dataclass(kw_only=True)
+class InlineQueryResult(BotModel):
     type: str
     id: str
 
 
+@dataclass(kw_only=True)
 class InlineQueryResultArticle(InlineQueryResult):
-    type: str = "article"
     title: str
     input_message_content: InputTextMessageContent
+    type: str = "article"
     reply_markup: Optional[InlineKeyboardMarkup] = None
     url: Optional[str] = None
     description: Optional[str] = None
     thumbnail_url: Optional[str] = None
 
 
+@dataclass(kw_only=True)
 class InlineQueryResultPhoto(InlineQueryResult):
-    type: str = "photo"
     photo_url: str
     thumb_url: str
+    type: str = "photo"
     photo_width: Optional[int] = None
     photo_height: Optional[int] = None
     title: Optional[str] = None
@@ -53,7 +60,8 @@ class InlineQueryResultPhoto(InlineQueryResult):
 InlineQueryResultType = Union[InlineQueryResultArticle, InlineQueryResultPhoto]
 
 
-class AnswerInlineQuery(BaseModel):
+@dataclass
+class AnswerInlineQuery(BotModel):
     inline_query_id: str
     results: List[InlineQueryResultType]
     cache_time: int = 300

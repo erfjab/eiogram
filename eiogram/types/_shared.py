@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from typing import Optional, List
-from pydantic import BaseModel
+from ._base import BotModel
 
 
-class SharedUser(BaseModel):
+@dataclass
+class SharedUser(BotModel):
     user_id: int
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -20,7 +22,8 @@ class SharedUser(BaseModel):
         return self.first_name or ""
 
 
-class UsersShared(BaseModel):
+@dataclass
+class UsersShared(BotModel):
     request_id: int
     users: List[SharedUser]
 
@@ -33,7 +36,8 @@ class UsersShared(BaseModel):
         return self.users[0] if self.users else None
 
 
-class ChatShared(BaseModel):
+@dataclass
+class ChatShared(BotModel):
     request_id: int
     chat_id: int
     title: Optional[str] = None

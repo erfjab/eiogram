@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from typing import Optional, List
-from pydantic import BaseModel
+from ._base import BotModel
 
 
-class InlineKeyboardButton(BaseModel):
+@dataclass
+class InlineKeyboardButton(BotModel):
     text: str
     callback_data: Optional[str] = None
     url: Optional[str] = None
@@ -10,7 +12,7 @@ class InlineKeyboardButton(BaseModel):
     copy_text: Optional[str] = None
     switch_inline_query_current_chat: Optional[str] = None
 
-    def dict(self) -> dict:
+    def model_dump(self, exclude_none=False) -> dict:
         result = {"text": self.text}
         if self.callback_data is not None:
             result["callback_data"] = self.callback_data
@@ -25,7 +27,8 @@ class InlineKeyboardButton(BaseModel):
         return result
 
 
-class InlineKeyboardMarkup(BaseModel):
+@dataclass
+class InlineKeyboardMarkup(BotModel):
     inline_keyboard: List[List[InlineKeyboardButton]]
 
     def dict(self) -> dict:

@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from typing import Optional
 from enum import StrEnum
-from pydantic import BaseModel
+from ._base import BotModel
 
 
 class ChatType(StrEnum):
@@ -19,7 +20,8 @@ class ChatMemberStatus(StrEnum):
     KICKED = "kicked"
 
 
-class Chat(BaseModel):
+@dataclass
+class Chat(BotModel):
     id: int
     type: ChatType
     title: Optional[str] = None
