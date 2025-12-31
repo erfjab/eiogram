@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional, TYPE_CHECKING
-import httpx
+import aiohttp
+import ujson
+import asyncio
 from ...utils.exceptions import (
     TelegramError,
     TelegramAPIError,
@@ -15,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class MethodBase:
-    _shared_client: Optional[httpx.AsyncClient] = None
+    _shared_session: Optional[aiohttp.ClientSession] = None
 
     def __init__(self, bot: "Bot"):
         self.bot = bot
@@ -23,10 +25,17 @@ class MethodBase:
         self.base_url = f"https://api.telegram.org/bot{self.token}/"
 
     @classmethod
-    def _get_client(cls) -> httpx.AsyncClient:
-        if cls._shared_client is None or cls._shared_client.is_closed:
-            cls._shared_client = httpx.AsyncClient()
-        return cls._shared_client
+    def _get_session(cls) -> aiohttp.ClientSession:
+        if cls._shared_session is None or cls._shared_session.closed:
+            connector = aiohttp.TCPConnector(
+                limit=0,
+                ttl_dns_cache=300,
+                use_dns_cache=True,
+                enable_cleanup_closed=True,
+                keepalive_timeout=30,
+            )
+            cls._shared_session = aiohttp.ClientSession(connector=connector, json_serialize=ujson.dumps)
+        return cls._shared_session
 
     async def _make_request(
         self,
@@ -40,31 +49,30 @@ class MethodBase:
         telegram_wait = float(request_json.get("timeout", 0))
         total_timeout = max(timeout, telegram_wait + 5)
 
-        client = self._get_client()
+        session = self._get_session()
         try:
-            response = await client.request(
+            async with session.request(
                 method.upper(),
                 f"{self.base_url}{endpoint}",
                 json=request_json,
-                timeout=total_timeout,
-            )
-        except httpx.TimeoutException:
+                timeout=aiohttp.ClientTimeout(total=total_timeout),
+            ) as response:
+                return await self._parse_response(response)
+        except asyncio.TimeoutError:
             raise TimeoutError(total_timeout)
-        except httpx.RequestError as e:
+        except aiohttp.ClientError as e:
             raise NetworkError(f"Network error: {e}")
         except Exception as e:
             raise TelegramError(f"Unexpected error: {e}")
 
-        return self._parse_response(response)
-
-    def _parse_response(self, response: httpx.Response) -> Dict[str, Any]:
+    async def _parse_response(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
         """Parse and validate Telegram API response."""
         try:
-            data: dict = response.json()
+            data = await response.json(loads=ujson.loads)
         except ValueError:
             raise TelegramError("Invalid JSON response")
 
-        status = response.status_code
+        status = response.status
         if status == 401:
             raise InvalidTokenError()
         if status == 429:
