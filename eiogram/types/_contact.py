@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from typing import Optional
 from ._base import BotModel
 
 
+@dataclass
 class Contact(BotModel):
     phone_number: str
     first_name: str

@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
+from ._base import BotModel
 
 
-class BotCommand(BaseModel):
+@dataclass
+class BotCommand(BotModel):
     command: str
     description: str
 

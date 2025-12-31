@@ -1,16 +1,19 @@
+from dataclasses import dataclass
 from typing import Optional
-from pydantic import Field
 from ._base import BotModel
 from ._user import User
 from ._message import Message
 from ._chat import Chat
 
 
+@dataclass
 class CallbackQuery(BotModel):
     id: str
-    from_user: User = Field(..., alias="from")
+    from_user: User
     message: Optional[Message] = None
     data: Optional[str] = None
+
+    _aliases = {"from_user": "from"}
 
     def __str__(self) -> str:
         return f"CallbackQuery(id={self.id}, from={self.from_user.full_name}, data={self.data})"

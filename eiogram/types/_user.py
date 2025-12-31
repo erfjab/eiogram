@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 from typing import Optional, Union
 from ._base import BotModel
 
 
+@dataclass
 class User(BotModel):
     id: int
     is_bot: bool

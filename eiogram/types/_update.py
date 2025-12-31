@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import Optional, Any, Union
 from ._base import BotModel
 from ._message import Message
@@ -5,12 +6,13 @@ from ._callback_query import CallbackQuery
 from ._inline_query import InlineQuery
 
 
+@dataclass
 class Update(BotModel):
     update_id: int
     message: Optional[Message] = None
     callback_query: Optional[CallbackQuery] = None
     inline_query: Optional[InlineQuery] = None
-    data: dict[str, Any] = {}
+    data: dict[str, Any] = field(default_factory=dict)
 
     @property
     def origin(self) -> Optional[Union[Message, CallbackQuery, InlineQuery]]:
@@ -28,4 +30,5 @@ class Update(BotModel):
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Set item in data dictionary"""
+        self.data[key] = value
         self.data[key] = value

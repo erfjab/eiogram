@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from typing import Optional, List
 from random import randint
-from pydantic import BaseModel
+from ._base import BotModel
 
 
-class KeyboardButton(BaseModel):
+@dataclass
+class KeyboardButton(BotModel):
     text: str
     request_contact: Optional[bool] = None
     request_location: Optional[bool] = None
@@ -11,7 +13,7 @@ class KeyboardButton(BaseModel):
     request_channel: Optional[bool] = None
     request_group: Optional[bool] = None
 
-    def dict(self) -> dict:
+    def model_dump(self, exclude_none=False) -> dict:
         result = {"text": self.text}
 
         if self.request_contact:
@@ -47,15 +49,16 @@ class KeyboardButton(BaseModel):
         return result
 
 
-class ReplyKeyboardMarkup(BaseModel):
+@dataclass
+class ReplyKeyboardMarkup(BotModel):
     keyboard: List[List[KeyboardButton]]
     resize_keyboard: Optional[bool] = None
     one_time_keyboard: Optional[bool] = None
     is_persistent: Optional[bool] = None
     input_field_placeholder: Optional[str] = None
 
-    def dict(self) -> dict:
-        result = {"keyboard": [[btn.dict() for btn in row] for row in self.keyboard]}
+    def model_dump(self, exclude_none=False) -> dict:
+        result = {"keyboard": [[btn.model_dump() for btn in row] for row in self.keyboard]}
 
         if self.resize_keyboard is not None:
             result["resize_keyboard"] = self.resize_keyboard
@@ -69,11 +72,12 @@ class ReplyKeyboardMarkup(BaseModel):
         return result
 
 
-class ReplyKeyboardRemove(BaseModel):
+@dataclass
+class ReplyKeyboardRemove(BotModel):
     remove_keyboard: bool = True
     selective: Optional[bool] = None
 
-    def dict(self) -> dict:
+    def model_dump(self, exclude_none=False) -> dict:
         result = {"remove_keyboard": self.remove_keyboard}
         if self.selective is not None:
             result["selective"] = self.selective

@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Optional, Union, List
-from pydantic import Field
 from ._base import BotModel
 from ._user import User
 from ._chat import Chat
@@ -31,6 +31,7 @@ class EntityType(StrEnum):
     CUSTOM_EMOJI = "custom_emoji"
 
 
+@dataclass
 class PhotoSize(BotModel):
     file_id: str
     file_unique_id: str
@@ -39,6 +40,7 @@ class PhotoSize(BotModel):
     file_size: Optional[int] = None
 
 
+@dataclass
 class MessageEntity(BotModel):
     type: str
     offset: int
@@ -49,10 +51,11 @@ class MessageEntity(BotModel):
     custom_emoji_id: Optional[str] = None
 
 
+@dataclass
 class Message(BotModel):
     message_id: int
-    from_user: Optional[User] = Field(None, alias="from")
     chat: Chat
+    from_user: Optional[User] = None
     text: Optional[str] = None
     photo: Optional[list[PhotoSize]] = None
     caption: Optional[str] = None
@@ -67,6 +70,8 @@ class Message(BotModel):
     forward_signature: Optional[str] = None
     forward_sender_name: Optional[str] = None
     forward_date: Optional[int] = None
+
+    _aliases = {"from_user": "from"}
 
     @property
     def id(self) -> int:
