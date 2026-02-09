@@ -1,5 +1,5 @@
 from typing import List, Union, Optional, Tuple, Dict, Any
-from ..types._inline_keyboard import InlineKeyboardMarkup, InlineKeyboardButton
+from ..types._inline_keyboard import InlineKeyboardMarkup, InlineKeyboardButton, ButtonStyle
 
 
 class InlineKeyboardBuilder:
@@ -14,6 +14,7 @@ class InlineKeyboardBuilder:
         web_app: Optional[str] = None,
         copy_text: Optional[str] = None,
         switch_inline_query_current_chat: Optional[str] = None,
+        style: Optional[ButtonStyle] = None,
     ) -> "InlineKeyboardBuilder":
         if not any([callback_data, url, web_app, copy_text, switch_inline_query_current_chat]):
             raise ValueError("At least one button action must be specified")
@@ -25,6 +26,7 @@ class InlineKeyboardBuilder:
             url=url,
             copy_text=copy_text,
             switch_inline_query_current_chat=switch_inline_query_current_chat,
+            style=style,
         )
 
         if not self._keyboard:
