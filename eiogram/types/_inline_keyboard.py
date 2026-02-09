@@ -1,11 +1,19 @@
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Optional, List
 from ._base import BotModel
+
+
+class ButtonStyle(StrEnum):
+    PRIMARY = "primary"
+    SUCCESS = "success"
+    DANGER = "danger"
 
 
 @dataclass
 class InlineKeyboardButton(BotModel):
     text: str
+    style: Optional[ButtonStyle] = None
     callback_data: Optional[str] = None
     url: Optional[str] = None
     web_app: Optional[str] = None
@@ -14,6 +22,8 @@ class InlineKeyboardButton(BotModel):
 
     def model_dump(self, exclude_none=False) -> dict:
         result = {"text": self.text}
+        if self.style is not None:
+            result["style"] = self.style.value
         if self.callback_data is not None:
             result["callback_data"] = self.callback_data
         if self.url is not None:
