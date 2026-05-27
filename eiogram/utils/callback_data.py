@@ -15,6 +15,7 @@ class CallbackData:
         cls._prefix = prefix
         cls._sep = sep
         super().__init_subclass__(**kwargs)
+        dataclass(cls)
 
     def pack(self) -> str:
         parts = [self._prefix]
