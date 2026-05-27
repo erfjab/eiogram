@@ -25,6 +25,6 @@ class GetUpdates(MethodBase):
         result = response.get("result", [])
         updates: List[Update] = []
         for raw in result:
-            raw["bot"] = self.bot
-            updates.append(Update(**raw))
+            update = Update.from_dict(raw).set_bot(self.bot)
+            updates.append(update)
         return updates
