@@ -27,5 +27,4 @@ class EditMessage(MethodBase):
 
         response = await self._make_request("POST", "editMessageText", data)
         result = response["result"]
-        result["bot"] = self.bot
-        return Message(**result)
+        return Message.from_dict(result).set_bot(self.bot)
